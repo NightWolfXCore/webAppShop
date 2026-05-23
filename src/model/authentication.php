@@ -4,14 +4,21 @@ namespace Model;
 
 use Exception;
 use repository\Database;
+use core;
 
 class Authentication
 {
-    public static function login(array $DataForm)
+    private DataUserRepository $userRepository;
+
+    public function __construct(object $userRepository)
+    {
+        $this->userRepository = $userRepository;        
+    }
+    public function login(array $DataForm)
     {
         $result = null;
         try {
-            $initialDataUser = ->getDataUserByLogin($DataForm["user_Login"]);
+            $initialDataUser = $this->userRepository->getDataUserByLogin($DataForm["user_Login"]);
             if (password_verify($DataForm["user_Password"], $initialDataUser->user_Password)) {
                 $_SESSION["user_SESSION"] = [
                     "user_ID" => $initialDataUser->user_ID,
@@ -26,7 +33,7 @@ class Authentication
         }
     }
 
-    public static function logout(array $DataForm = [])
+    public function logout(array $DataForm = [])
     {
         $result = null;
         try {
@@ -38,34 +45,20 @@ class Authentication
         }
     }
 
-    public static function register(array $DataForm)
+    public function register(array $DataForm)
     {
         $result = null;
         try {
             $user_Login = $DataForm["user_Login"];
-            $user_Email = $DataForm["user_Email"];
-            $user_Phone = $DataForm["user_Phone"];
-            $user_Surname = $DataForm["user_Surname"];
-            $user_Firstname = $DataForm["user_Name"];
-            $user_Patronymic = $DataForm["user_Patronymic"] ?? "";
             $user_Password = [
                 "pass" => $DataForm["user_Password"],
                 "confirm" => $DataForm["user_Password_Repeat"]
             ];
-
+            
             if ($user_Password['pass'] !== $user_Password['confirm'])
                 throw new Exception("Пароли не совпадают!");
 
-            $initialDataUser = DataUser::getDataUserByLogin($user_Login);
-            if (mysqli_num_rows($initialDataUser) === 1)
-                throw new Exception("Данный пользователь уже существует по данному логину!");
-
-            $sqlQueryInsertUser = sprintf("INSERT INTO `users`(`user_Login`, `user_Email`, `user_Phone`, `user_Surname`, `user_Firstname`, `user_Patronymic`, `user_Password`) VALUES
-            ('%s', '%s', '%s', '%s', '%s')", $user_Login, $user_Email, $user_Phone, $user_Surname, $user_Firstname, ((!empty($user_Patronymic) ? $user_Patronymic : "NULL")), password_hash($user_Password['pass'], PASSWORD_BCRYPT));
-
-            $result = mysqli_query(Database::connect(), $sqlQueryInsertUser);
-            if (!$result)
-                throw new Exception("Ошибка при регистрации пользователя: возможно, почта или телефон уже используются другим пользователем");
+            $result = $this->userRepository->insertDataUser($DataForm);
 
             Authentication::login(
                 [

@@ -21,9 +21,9 @@ Routing::getMethod("/settings", "settings");
 
 Routing::getMethod("/test", "testpage");
 
-Routing::postMethod("/login", Authentication::class, "login", $_POST);
-Routing::postMethod("/register", Authentication::class, "register", $_POST);
-Routing::postMethod("/logout", Authentication::class, "logout", $_POST = []);
+Routing::postMethod("/login", $authentication, "login", $_POST);
+Routing::postMethod("/register", $authentication, "register", $_POST);
+Routing::postMethod("/logout", $authentication, "logout", $_POST = []);
 
 Routing::action();
 ?>

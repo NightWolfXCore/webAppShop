@@ -13,11 +13,11 @@ class Routing
             "namepage" => $namepage
         ];
     }
-    public static function postMethod(string $URL, string $class, string $method, ?array $data = [])
+    public static function postMethod(string $URL, object $objClass, string $method, ?array $data = [])
     {
         self::$list[] = [
             "url" => $URL,
-            "class" => $class,
+            "objClass" => $objClass,
             "method" => $method,
             "data" => $data
         ];
@@ -32,11 +32,11 @@ class Routing
             }
             if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 if ($variable["url"] === "/" . $routing) {
-                    $class = $variable["class"];
+                    $objClass = $variable["objClass"];
                     $method = $variable["method"];
                     $data = $variable["data"];
 
-                    $result = $class::$method($data);
+                    $result = $objClass->$method($data);
 
                     $returnTo = $data["_returnTo"] ?? ($_SERVER["HTTP_REFERER"] ?? "/");
                     header("Location: " . $returnTo);
