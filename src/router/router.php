@@ -2,6 +2,7 @@
 namespace router;
 
 use Model\Authentication;
+use repository\Database;
 
 Routing::getMethod("/", "main");
 Routing::getMethod("/catalog", "catalog");

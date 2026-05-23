@@ -2,30 +2,33 @@
 
 namespace repository;
 
+use mysqli;
 use Exception;
 
 class Database
 {
-    public static $dataBase = [
+    private array $configuration = [
         "host" => "127.0.0.1:3306", // Стандартные хост 
         "user" => "root", // Заходим от суперпользователя root
         "pass" => "", // Пароль
         "dataBase" => "confectioneryshop" // База данных, с которой работаем
     ];
 
-    public static function connect()
+    public ?mysqli $dataBase = null;
+
+    public function connect()
     {
         try {
-            $result = mysqli_connect(
-                self::$dataBase["host"],
-                self::$dataBase["user"],
-                self::$dataBase["pass"],
-                self::$dataBase["dataBase"],
+            $this->dataBase = mysqli_connect(
+                $this->configuration["host"],
+                $this->configuration["user"],
+                $this->configuration["pass"],
+                $this->configuration["dataBase"],
             );
-            if ($result === false)
+            if ($this->dataBase === false)
                 throw new Exception("Ошибка подключения");
-            $result->set_charset("utf8mb4");
-            return $result;
+            $this->dataBase->set_charset("utf8mb4");
+            return $this->dataBase;
         } catch (Exception $ex) {
             die($ex->getMessage());
         }

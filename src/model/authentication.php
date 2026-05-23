@@ -7,37 +7,30 @@ use repository\Database;
 
 class Authentication
 {
-
-    public static function login(array $newData)
+    public static function login(array $DataForm)
     {
         $result = null;
         try {
-            $dataUser = new DataUser();
-            $initialDataUser = DataUser::getDataUserByLogin($newData["user_Login"]);
-            if (mysqli_num_rows($initialDataUser) === 1) {
-                $initialDataUserObject = $initialDataUser->fetch_object();
-                if (password_verify($newData["user_Password"], $initialDataUserObject->user_Password)) {
-                    $_SESSION["user_SESSION"] = [
-                        "user_ID" => $initialDataUserObject->user_ID,
-                        "user_Login" => $initialDataUserObject->user_Login,
-                        "user_Role" => $initialDataUserObject->user_Role
-                    ];
-                } else {
-                    throw new Exception("Ошибка аутентификации: неверный пароль");
-                }
+            $initialDataUser = ->getDataUserByLogin($DataForm["user_Login"]);
+            if (password_verify($DataForm["user_Password"], $initialDataUser->user_Password)) {
+                $_SESSION["user_SESSION"] = [
+                    "user_ID" => $initialDataUser->user_ID,
+                    "user_Login" => $initialDataUser->user_Login,
+                    "user_Role" => $initialDataUser->user_Role
+                ];
             } else {
-                throw new Exception("Ошибка аутентификации: данного пользователя в базе не существует!");
+                throw new Exception("Ошибка аутентификации: неверный пароль");
             }
         } catch (Exception $ex) {
             die($ex->getMessage());
         }
     }
 
-    public static function logout(array $newData = [])
+    public static function logout(array $DataForm = [])
     {
         $result = null;
         try {
-            if (!isset($_SESSION["user_SESSION"])) 
+            if (!isset($_SESSION["user_SESSION"]))
                 throw new Exception("Forbidden");
             unset($_SESSION["user_SESSION"]);
         } catch (Exception $ex) {
@@ -45,19 +38,19 @@ class Authentication
         }
     }
 
-    public static function register(array $newData)
+    public static function register(array $DataForm)
     {
         $result = null;
         try {
-            $user_Login = $newData["user_Login"];
-            $user_Email = $newData["user_Email"];
-            $user_Phone = $newData["user_Phone"];
-            $user_Surname = $newData["user_Surname"];
-            $user_Firstname = $newData["user_Name"];
-            $user_Patronymic = $newData["user_Patronymic"] ?? "";
+            $user_Login = $DataForm["user_Login"];
+            $user_Email = $DataForm["user_Email"];
+            $user_Phone = $DataForm["user_Phone"];
+            $user_Surname = $DataForm["user_Surname"];
+            $user_Firstname = $DataForm["user_Name"];
+            $user_Patronymic = $DataForm["user_Patronymic"] ?? "";
             $user_Password = [
-                "pass" => $newData["user_Password"],
-                "confirm" => $newData["user_Password_Repeat"]
+                "pass" => $DataForm["user_Password"],
+                "confirm" => $DataForm["user_Password_Repeat"]
             ];
 
             if ($user_Password['pass'] !== $user_Password['confirm'])
