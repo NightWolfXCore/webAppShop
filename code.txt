@@ -1,3 +1,4 @@
+
 ========================================================================================================================
 FILE NAME: .htaccess
 FULL PATH: C:\OpenServer\domains\confectioneryShop\.htaccess
@@ -8,16 +9,22 @@ RewriteCond %{REQUEST_FILENAME} !-f
 AddDefaultCharset UTF-8
 RewriteRule ^(.*)$ index.php?routing=$1 [L,QSA]
 
+
 ========================================================================================================================
 FILE NAME: index.php
 FULL PATH: C:\OpenServer\domains\confectioneryShop\index.php
 ------------------------------------------------------------------------------------------------------------------------
 <?php
+use core\bootstrap;
+
 session_start();
 require_once "src/repository/database.php"; // Important (First ever)
 require_once "src/model/dataUserRepository.php";
 require_once "src/model/authentication.php";
 require_once "src/core/bootstrap.php"; 
+
+$app = new bootstrap();
+
 require_once "src/router/routing.php";
 require_once "src/router/router.php";
 ?>  
@@ -14398,19 +14405,40 @@ FILE NAME: bootstrap.php
 FULL PATH: C:\OpenServer\domains\confectioneryShop\src\core\bootstrap.php
 ------------------------------------------------------------------------------------------------------------------------
 <?php
+
 namespace core;
 
 use Model\Authentication;
 use repository\Database;
 use Model\DataUserRepository;
+use mysqli;
 
-$dataBase = new Database();
-$connectionDB = $dataBase->connect();
+class bootstrap
+{
+    public Database $database;
+    public mysqli $connectionDB;
+    public DataUserRepository $userRepository;
+    public Authentication $authentication;
+    public ?object $userData;
 
-$userRepository = new DataUserRepository($connectionDB);
-$authentication = new Authentication($userRepository)
+    public function __construct()
+    {
+        $this->database = new Database();
+        $this->connectionDB = $this->database->connect();
+        $this->userRepository = new DataUserRepository($this->connectionDB);
+        $this->authentication = new Authentication($this->userRepository);
+        $userData = isset($_SESSION["user_SESSION"]) ? $this->userRepository->getDataUserByID($_SESSION["user_SESSION"]["user_ID"]) : null;
 
-?>
+        if (isset($_SESSION["user_SESSION"])) {
+            if (empty($userData->user_Patronymic)) {
+                $userData->FullName = sprintf("%s. %s", mb_substr($userData->user_Firstname, 0, 1),  $userData->user_Surname);
+            } else {
+                $userData->FullName = sprintf("%s. %s. %s", mb_substr($userData->user_Firstname, 0, 1), mb_substr($userData->user_Patronymic, 0, 1), $userData->user_Surname);
+            }
+        }
+    }
+}
+
 
 
 ========================================================================================================================
@@ -14427,9 +14455,9 @@ use core;
 
 class Authentication
 {
-    private $userRepository;
+    private DataUserRepository $userRepository;
 
-    public function __construct($userRepository)
+    public function __construct(object $userRepository)
     {
         $this->userRepository = $userRepository;        
     }
@@ -14664,9 +14692,9 @@ Routing::getMethod("/settings", "settings");
 
 Routing::getMethod("/test", "testpage");
 
-Routing::postMethod("/login", Authentication::class, "login", $_POST);
-Routing::postMethod("/register", Authentication::class, "register", $_POST);
-Routing::postMethod("/logout", Authentication::class, "logout", $_POST = []);
+Routing::postMethod("/login", $app->authentication, "login", $_POST);
+Routing::postMethod("/register", $app->authentication, "register", $_POST);
+Routing::postMethod("/logout", $app->authentication, "logout", $_POST = []);
 
 Routing::action();
 ?>
@@ -14691,11 +14719,11 @@ class Routing
             "namepage" => $namepage
         ];
     }
-    public static function postMethod(string $URL, string $class, string $method, ?array $data = [])
+    public static function postMethod(string $URL, object $objClass, string $method, ?array $data = [])
     {
         self::$list[] = [
             "url" => $URL,
-            "class" => $class,
+            "objClass" => $objClass,
             "method" => $method,
             "data" => $data
         ];
@@ -14710,18 +14738,17 @@ class Routing
             }
             if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 if ($variable["url"] === "/" . $routing) {
-                    $class = $variable["class"];
+                    $objClass = $variable["objClass"];
                     $method = $variable["method"];
                     $data = $variable["data"];
 
-                    $result = $class::$method($data);
+                    $result = $objClass->$method($data);
 
                     $returnTo = $data["_returnTo"] ?? ($_SERVER["HTTP_REFERER"] ?? "/");
                     header("Location: " . $returnTo);
                 }
             }
         }
-        die();
     }
 }
 
@@ -16188,11 +16215,12 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\catalog\cat
 FILE NAME: buttonAuthProfile.php
 FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\header\buttonAuthProfile.php
 ------------------------------------------------------------------------------------------------------------------------
+<?php // global $userData; ?>
 <?php if (!isset($_SESSION["user_SESSION"])): ?>
     <a href="/auth" class="btn btn-soft auth-btn">Авторизоваться</a>
 <?php else: ?>
     <div class="dropdown">
-        <button class="btn btn-soft auth-btn dropdown-toggle" type="button" data-bs-toggle="dropdown"><?= htmlspecialchars($_SESSION["user_SESSION"]["user_FullName"]) ?></button>
+        <button class="btn btn-soft auth-btn dropdown-toggle" type="button" data-bs-toggle="dropdown"><?= htmlspecialchars($userData->FullName) ?></button>
         <ul class="dropdown-menu dropdown-menu-end">
             <li>
                 <a class="dropdown-item" href="/settings">Настройки</a>
@@ -16229,9 +16257,7 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\header\cata
 5. Print template
 */
 
-use repository\Database;
-
-$list = mysqli_query(Database::connect(), "SELECT * FROM `catalog`");
+$list = mysqli_query($app->connectionDB, "SELECT * FROM `catalog`");
 
 // Get all catalog Information
 
@@ -17209,52 +17235,3 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\profile\set
 </main>
 
 
-========================================================================================================================
-DATABASE
-------------------------------------------------------------------------------------------------------------------------
-+----------------+-----------------------+---------------+------+-----+---------+----------------+
-| Table          | Field                 | Type          | Null | Key | Default | Extra          |
-+----------------+-----------------------+---------------+------+-----+---------+----------------+
-| catalog        | catalog_ID            | int           | NO   | PRI | NULL    | auto_increment |
-| catalog        | catalog_Name          | varchar(25)   | NO   | UNI | NULL    |                |
-| catalog        | catalog_Link          | varchar(128)  | YES  | UNI | NULL    |                |
-| catalog        | catalog_Parent        | int           | NO   |     | 0       |                |
-| manufacturer   | manufacturer_ID       | int           | NO   | PRI | NULL    | auto_increment |
-| manufacturer   | manufacturer_Name     | int           | NO   | UNI | NULL    |                |
-| orders         | order_ID              | int           | NO   | PRI | NULL    | auto_increment |
-| orders         | order_Status          | tinyint       | NO   |     | NULL    |                |
-| orders         | order_Datetime        | date          | NO   |     | NULL    |                |
-| orders         | order_FinalCost       | int           | NO   |     | NULL    |                |
-| orders         | order_Client          | int           | NO   |     | NULL    |                |
-| position_order | position_ID           | int           | NO   | PRI | NULL    | auto_increment |
-| position_order | position_Item         | int           | NO   | MUL | NULL    |                |
-| position_order | position_Amount       | tinyint       | NO   |     | NULL    |                |
-| position_order | position_Cost         | int           | NO   |     | NULL    |                |
-| position_order | position_Order        | int           | NO   | MUL | NULL    |                |
-| product_photo  | photo_ID              | int           | NO   | PRI | NULL    | auto_increment |
-| product_photo  | photo_Path            | varchar(512)  | NO   | UNI | NULL    |                |
-| product_photo  | photo_Name            | varchar(32)   | NO   |     | NULL    |                |
-| product_photo  | photo_AltName         | varchar(32)   | YES  |     | NULL    |                |
-| product_photo  | photo_Description     | varchar(256)  | YES  |     | NULL    |                |
-| products       | product_ID            | int           | NO   | PRI | NULL    | auto_increment |
-| products       | product_Name          | varchar(100)  | NO   |     | NULL    |                |
-| products       | product_Description   | text          | NO   |     | NULL    |                |
-| products       | product_Compound      | varchar(512)  | NO   |     | NULL    |                |
-| products       | product_Weight        | decimal(6,2)  | NO   |     | NULL    |                |
-| products       | product_Protein       | float         | NO   |     | NULL    |                |
-| products       | product_Carbohydrates | float         | NO   |     | NULL    |                |
-| products       | product_Fat           | float         | NO   |     | NULL    |                |
-| products       | product_Calories      | float         | NO   |     | NULL    |                |
-| products       | product_Cost          | decimal(10,2) | NO   |     | NULL    |                |
-| products       | product_Manufacturer  | int           | NO   | MUL | NULL    |                |
-| products       | product_DemoPhoto     | int           | YES  | UNI | NULL    |                |
-| users          | user_ID               | int           | NO   | PRI | NULL    | auto_increment |
-| users          | user_Login            | varchar(50)   | NO   |     | NULL    |                |
-| users          | user_Email            | varchar(100)  | NO   | UNI | NULL    |                |
-| users          | user_Phone            | varchar(11)   | NO   | UNI | NULL    |                |
-| users          | user_Surname          | varchar(100)  | NO   |     | NULL    |                |
-| users          | user_Firstname        | varchar(100)  | NO   |     | NULL    |                |
-| users          | user_Patronymic       | varchar(100)  | YES  |     | NULL    |                |
-| users          | user_Password         | varchar(512)  | NO   |     | NULL    |                |
-| users          | user_Role             | tinyint       | NO   |     | 1       |                |
-+----------------+-----------------------+---------------+------+-----+---------+----------------+

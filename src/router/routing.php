@@ -43,6 +43,5 @@ class Routing
                 }
             }
         }
-        die();
     }
 }

@@ -4,6 +4,8 @@ namespace router;
 use Model\Authentication;
 use repository\Database;
 
+global $app;
+
 Routing::getMethod("/", "main");
 Routing::getMethod("/catalog", "catalog");
 Routing::getMethod("/about", "about");
@@ -21,9 +23,9 @@ Routing::getMethod("/settings", "settings");
 
 Routing::getMethod("/test", "testpage");
 
-Routing::postMethod("/login", $authentication, "login", $_POST);
-Routing::postMethod("/register", $authentication, "register", $_POST);
-Routing::postMethod("/logout", $authentication, "logout", $_POST = []);
+Routing::postMethod("/login", $app->authentication, "login", $_POST);
+Routing::postMethod("/register", $app->authentication, "register", $_POST);
+Routing::postMethod("/logout", $app->authentication, "logout", $_POST);
 
 Routing::action();
 ?>

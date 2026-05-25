@@ -1,8 +1,9 @@
+<?php global $app; ?>
 <?php if (!isset($_SESSION["user_SESSION"])): ?>
     <a href="/auth" class="btn btn-soft auth-btn">Авторизоваться</a>
 <?php else: ?>
     <div class="dropdown">
-        <button class="btn btn-soft auth-btn dropdown-toggle" type="button" data-bs-toggle="dropdown"><?= htmlspecialchars($_SESSION["user_SESSION"]["user_FullName"]) ?></button>
+        <button class="btn btn-soft auth-btn dropdown-toggle" type="button" data-bs-toggle="dropdown"><?= htmlspecialchars($app->userData->FullName) ?></button>
         <ul class="dropdown-menu dropdown-menu-end">
             <li>
                 <a class="dropdown-item" href="/settings">Настройки</a>

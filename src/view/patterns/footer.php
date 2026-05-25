@@ -1,3 +1,4 @@
+<?php global $app; ?>
 <footer class="site-footer">
   <div class="wrap footer-grid">
     <div>
@@ -6,12 +7,12 @@
       </a>
       <div class="f-text">Собственное производство. Доставка и самовывоз.</div>
       <div class="f-text f-gap">
-        Телефон: <a class="link" href="tel:+79990000000">+7 (999) 000-00-00</a><br>
-        Адрес: <span class="f-strong">г. Ваш город, ул. Примерная, 10</span>
+        Телефон: <a class="link" href="tel:<?php echo $app->shopInfo->shop_phone ?>">+<?php echo $app->shopInfo->shop_phone ?></a><br>
+        Адрес: <span class="f-strong"><?php echo $app->shopInfo->shop_address;?></span>
       </div>
       <div class="f-text">
-        ИНН: <span class="f-strong">0000000000</span><br>
-        ОГРН: <span class="f-strong">0000000000000</span>
+        ИНН: <span class="f-strong"><?php echo $app->shopInfo->shop_INN;?></span><br>
+        ОГРН: <span class="f-strong"><?php echo $app->shopInfo->shop_OGRN;?></span>
       </div>
     </div>
 

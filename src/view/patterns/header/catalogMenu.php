@@ -6,10 +6,8 @@
 4. Template
 5. Print template
 */
-
-use repository\Database;
-
-$list = mysqli_query(Database::connect(), "SELECT * FROM `catalog`");
+global $app;
+$list = mysqli_query($app->connectionDB, "SELECT * FROM `catalog`");
 
 // Get all catalog Information
 

@@ -1,7 +1,9 @@
+<?php global $app; ?>
+
 <main class="page profile-page">
     <div class="wrap">
         <section class="profile-hero">
-            <img src="/assets/img/profile/profile-banner.jpg" alt="Настройки профиля" class="profile-hero-image">
+            <img src="/assets/img/cakes/cake_2_0.jpg" alt="Настройки профиля" class="profile-hero-image">
             <div class="profile-hero-overlay"></div>
             <div class="profile-hero-content">
                 <div class="profile-hero-kicker">Личный кабинет</div>
@@ -24,36 +26,50 @@
                     <div class="profile-grid">
                         <div class="profile-field">
                             <label>ID пользователя</label>
-                            <input type="text" value="<?= $user["users_ID"] ?>" disabled>
+                            <input type="text" value="<?= $app->userData->user_ID ?>" disabled>
                         </div>
                         <div class="profile-field">
                             <label>Роль</label>
-                            <input type="text" value="<?= $user["users_Role"] ?>" disabled>
+                            <input type="text" value="<?= $app->userData->user_Role ?>" disabled>
                         </div>
                         <div class="profile-field">
                             <label>Логин</label>
-                            <input type="text" value="<?= $user["users_Login"] ?>" disabled>
+                            <input type="text" value="<?= $app->userData->user_Login ?>" disabled>
                         </div>
                         <div class="profile-field">
-                            <label>Полное имя</label>
+                            <label>Фамилия</label>
                             <input
                                 type="text"
-                                name="fullname"
-                                value="<?= htmlspecialchars($user["users_FullName"]) ?>">
+                                name="surname"
+                                value="<?= htmlspecialchars($app->userData->user_Surname) ?>">
+                        </div>
+                        <div class="profile-field">
+                            <label>Имя</label>
+                            <input
+                                type="text"
+                                name="firstname"
+                                value="<?= htmlspecialchars($app->userData->user_Firstname) ?>">
+                        </div>
+                        <div class="profile-field">
+                            <label>Отчество</label>
+                            <input
+                                type="text"
+                                name="patronymic"
+                                value="<?= htmlspecialchars($app->userData->user_Patronymic) ?>" placeholder="при наличии">
                         </div>
                         <div class="profile-field">
                             <label>Email</label>
                             <input
                                 type="email"
                                 name="email"
-                                value="<?= htmlspecialchars($user["users_Email"]) ?>">
+                                value="<?= htmlspecialchars($app->userData->user_Email) ?>">
                         </div>
                         <div class="profile-field">
                             <label>Телефон</label>
                             <input
                                 type="text"
                                 name="phone"
-                                value="<?= htmlspecialchars($user["users_Phone"]) ?>">
+                                value="<?= htmlspecialchars($app->userData->user_Phone) ?>">
                         </div>
                         <div class="profile-field">
                             <label>Новый пароль</label>
@@ -67,12 +83,13 @@
                         <button type="submit" class="btn btn-primary profile-save-btn">
                             Сохранить изменения
                         </button>
-                        <form action="/logout" method="POST" class="profile-logout-form">
-                            <button type="submit" class="btn btn-ghost profile-logout-btn" >
-                                Выйти из аккаунта
-                            </button>
-                        </form>
                     </div>
+                </form>
+                <form action="/logout" method="POST" class="profile-logout-form">
+                    <button type="submit" class="btn btn-ghost profile-logout-btn">
+                        Выйти из аккаунта
+                    </button>
+                    <input class="invisible" name="_returnTo" value="/" placeholder="returnToLink">
                 </form>
             </div>
         </section>
