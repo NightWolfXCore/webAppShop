@@ -14,6 +14,18 @@ class DataProductRepository
     {
         $this->dataBase = $dataBase;
     }
+    public function getDataProducts(): bool|array|null
+    {
+        $result = null;
+        try {
+            $sqlQueryGetProducts = "SELECT * FROM `products`";
+            if (($result = mysqli_query($this->dataBase, $sqlQueryGetProducts)) === false)
+                throw new Exception("Ошибка выдачи информации о товаре!");
+            return $result->fetch_all(MYSQLI_ASSOC);
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
     public function getDataProductByID(int $ID): bool|object|null
     {
         $result = null;

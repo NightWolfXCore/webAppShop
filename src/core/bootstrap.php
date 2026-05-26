@@ -6,6 +6,7 @@ use Model\Authentication;
 use repository\Database;
 use Model\DataUserRepository;
 use Model\DataProductRepository;
+use Model\DataTablesRepository;
 use mysqli;
 
 class bootstrap
@@ -13,8 +14,9 @@ class bootstrap
     public Database $database;
     public mysqli $connectionDB;
     public DataUserRepository $userRepository;
-    public Authentication $authentication;
     public DataProductRepository $productRepository;
+    public DataTablesRepository $tablesRepository;
+    public Authentication $authentication;
     public ?object $userData;
     public ?object $productData; 
 
@@ -28,6 +30,7 @@ class bootstrap
         $this->authentication = new Authentication($this->userRepository);
         $this->userData = isset($_SESSION["user_SESSION"]) ? $this->userRepository->getDataUserByID($_SESSION["user_SESSION"]["user_ID"]) : null;
         $this->productRepository = new DataProductRepository($this->connectionDB);
+        $this->tablesRepository = new DataTablesRepository($this->connectionDB);
 
         if (isset($_SESSION["user_SESSION"])) {
             if (empty($this->userData->user_Patronymic)) {

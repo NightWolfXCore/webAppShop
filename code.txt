@@ -9,7 +9,6 @@ RewriteCond %{REQUEST_FILENAME} !-f
 AddDefaultCharset UTF-8
 RewriteRule ^(.*)$ index.php?routing=$1 [L,QSA]
 
-
 ========================================================================================================================
 FILE NAME: index.php
 FULL PATH: C:\OpenServer\domains\confectioneryShop\index.php
@@ -20,9 +19,12 @@ use core\bootstrap;
 session_start();
 require_once "src/repository/database.php"; // Important (First ever)
 require_once "src/model/dataUserRepository.php";
+require_once "src/model/dataProductRepository.php";
+require_once "src/model/dataTablesRepository.php";
 require_once "src/model/authentication.php";
-require_once "src/core/bootstrap.php"; 
+require_once "src/core/bootstrap.php";
 
+global $app;
 $app = new bootstrap();
 
 require_once "src/router/routing.php";
@@ -1255,6 +1257,11 @@ END #CATALOG
     align-items: stretch;
 }
 
+.auth-layout-center {
+    display: flex;
+    justify-content: center;
+}
+
 .auth-side {
     position: relative;
     overflow: hidden;
@@ -2099,9 +2106,10 @@ END #HEADER AUTH
 .profile-hero-overlay {
     position: absolute;
     inset: 0;
+    backdrop-filter: brightness(var(--image-darkness));
     background:
         linear-gradient(90deg,
-            rgba(0, 0, 0, .58) 0%,
+            rgba(0, 0, 0, 1) 0%,
             rgba(0, 0, 0, .24) 45%,
             rgba(255, 255, 255, .04) 100%);
 }
@@ -2183,6 +2191,20 @@ END #HEADER AUTH
     background: rgba(0, 0, 0, .04);
     color: rgba(43, 36, 31, .62);
     cursor: not-allowed;
+}
+
+.profile-field input.input-died {
+    background: rgba(0, 0, 0, .04);
+    color: rgba(43, 36, 31, .62);
+    cursor: not-allowed;
+}
+
+.input-died-wrapper {
+    cursor: not-allowed;
+}
+
+.input-died {
+    pointer-events: none;
 }
 
 .profile-actions {
@@ -14411,6 +14433,8 @@ namespace core;
 use Model\Authentication;
 use repository\Database;
 use Model\DataUserRepository;
+use Model\DataProductRepository;
+use Model\DataTablesRepository;
 use mysqli;
 
 class bootstrap
@@ -14418,8 +14442,13 @@ class bootstrap
     public Database $database;
     public mysqli $connectionDB;
     public DataUserRepository $userRepository;
+    public DataProductRepository $productRepository;
+    public DataTablesRepository $tablesRepository;
     public Authentication $authentication;
     public ?object $userData;
+    public ?object $productData; 
+
+    public ?object $shopInfo;
 
     public function __construct()
     {
@@ -14427,15 +14456,18 @@ class bootstrap
         $this->connectionDB = $this->database->connect();
         $this->userRepository = new DataUserRepository($this->connectionDB);
         $this->authentication = new Authentication($this->userRepository);
-        $userData = isset($_SESSION["user_SESSION"]) ? $this->userRepository->getDataUserByID($_SESSION["user_SESSION"]["user_ID"]) : null;
+        $this->userData = isset($_SESSION["user_SESSION"]) ? $this->userRepository->getDataUserByID($_SESSION["user_SESSION"]["user_ID"]) : null;
+        $this->productRepository = new DataProductRepository($this->connectionDB);
+        $this->tablesRepository = new DataTablesRepository($this->connectionDB);
 
         if (isset($_SESSION["user_SESSION"])) {
-            if (empty($userData->user_Patronymic)) {
-                $userData->FullName = sprintf("%s. %s", mb_substr($userData->user_Firstname, 0, 1),  $userData->user_Surname);
+            if (empty($this->userData->user_Patronymic)) {
+                $this->userData->FullName = sprintf("%s. %s", mb_substr($this->userData->user_Firstname, 0, 1),  $this->userData->user_Surname);
             } else {
-                $userData->FullName = sprintf("%s. %s. %s", mb_substr($userData->user_Firstname, 0, 1), mb_substr($userData->user_Patronymic, 0, 1), $userData->user_Surname);
+                $this->userData->FullName = sprintf("%s. %s. %s", mb_substr($this->userData->user_Firstname, 0, 1), mb_substr($this->userData->user_Patronymic, 0, 1), $this->userData->user_Surname);
             }
         }
+        $this->shopInfo = mysqli_query($this->connectionDB, "SELECT * FROM `shop_info` WHERE `id` = 0")->fetch_object();
     }
 }
 
@@ -14522,6 +14554,194 @@ class Authentication
 
 
 ========================================================================================================================
+FILE NAME: dataProductRepository.php
+FULL PATH: C:\OpenServer\domains\confectioneryShop\src\model\dataProductRepository.php
+------------------------------------------------------------------------------------------------------------------------
+<?php
+
+namespace Model;
+
+use Exception;
+use mysqli;
+use mysqli_result;
+
+class DataProductRepository
+{
+    private mysqli $dataBase;
+
+    public function __construct(mysqli $dataBase)
+    {
+        $this->dataBase = $dataBase;
+    }
+    public function getDataProducts(): bool|array|null
+    {
+        $result = null;
+        try {
+            $sqlQueryGetProducts = "SELECT * FROM `products`";
+            if (($result = mysqli_query($this->dataBase, $sqlQueryGetProducts)) === false)
+                throw new Exception("Ошибка выдачи информации о товаре!");
+            return $result->fetch_all(MYSQLI_ASSOC);
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
+    public function getDataProductByID(int $ID): bool|object|null
+    {
+        $result = null;
+        try {
+            $sqlQueryGetProduct = sprintf("SELECT * FROM `products` WHERE `product_ID` = '%d'", $ID);
+            if (($result = mysqli_query($this->dataBase, $sqlQueryGetProduct)) === false)
+                throw new Exception("Ошибка выдачи информации о товаре!");
+            self::anomalyCheck($result);
+            return $result->fetch_object();
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
+    public function getDataProductByName(string $name): bool|object|null
+    {
+        $result = null;
+        try {
+            $sqlQueryGetProduct = sprintf("SELECT * FROM `products` WHERE `product_Name` = '%s'", $name);
+            if (($result = mysqli_query($this->dataBase, $sqlQueryGetProduct)) === false)
+                throw new Exception("Ошибка выдачи информации о товаре!");
+            self::anomalyCheck($result);
+            return $result->fetch_object();
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
+
+
+    public function insertDataProduct(array $productData): bool|null
+    {
+        try {
+            foreach ($productData as $key => $value) {
+                if ($key === "product_DemoPhoto") {
+                    $$key = $value ?? "";
+                } else {
+                    $$key = $value;
+                }
+            }
+
+            $initialDataProduct = $this->getDataProductByName($product_Name);
+
+            self::existProduct($initialDataProduct);
+
+            $sqlQueryInsertProduct = sprintf("INSERT INTO `products`(`product_Name`, `product_Description`, `product_Compound`, `product_Weight`, `product_Protein`, `product_Carbohydrates`, `product_Fat`, `product_Calories`, `product_Cost`, `product_Manufacturer`, `product_DemoPhoto`) VALUES
+            ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')", $product_Name, $product_Description, $product_Compound, $product_Weight, $product_Protein, $product_Carbohydrates, $product_Fat, $product_Calories, $product_Cost, $product_Manufacturer, (empty($product_DemoPhoto) ? "NULL" : htmlspecialchars("'" . $product_DemoPhoto . "'", ENT_NOQUOTES)));
+
+            $result = mysqli_query($this->dataBase, $sqlQueryInsertProduct);
+
+            if (!$result)
+                throw new Exception("Ошибка при вставке пользователя: возможно, почта или телефон уже используются другим пользователем");
+
+            return $result;
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
+
+    public function updateProduct(array $productData): bool|null
+    {
+        $result = null;
+        try {
+            $initialDataProduct = $this->getDataProductByID($productData["product_ID"]);
+            $productData = self::emptyCheck($productData, $initialDataProduct);
+            foreach ($productData as $key => $value) {
+                $$key = $value;
+            }
+            $sqlQueryUpdateProduct = sprintf("UPDATE `products` SET
+            `product_Name`='%s',            `product_Description`='%s',
+            `product_Compound`='%s',        `product_Weight`='%s',
+            `product_Protein`='%s',         `product_Carbohydrates`='%s',
+            `product_Fat`='%s',             `product_Calories`='%s',
+            `product_Cost`='%s',            `product_Manufacturer`='%s',
+            `product_DemoPhoto`=%s
+            WHERE `product_ID` = '%s'", $product_Name, $product_Description, $product_Compound, $product_Weight, $product_Protein, $product_Carbohydrates, $product_Fat, $product_Calories, $product_Cost, $product_Manufacturer, (empty($product_DemoPhoto) ? "NULL" : htmlspecialchars("'".$product_DemoPhoto."'", ENT_NOQUOTES)), $product_ID);
+
+            $result = mysqli_query($this->dataBase, $sqlQueryUpdateProduct);
+
+            if (!$result)
+                throw new Exception("Ошибка при обновлении товара: возможно, каких-то данные не хватает");
+            
+            return $result;
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
+    private static function emptyCheck(array $productData, object $initialDataProduct): array|bool
+    {
+        try {
+            foreach ($productData as $key => $value) {
+                if (empty($productData[$key])) {
+                    if ($key === "product_DemoPhoto") continue;
+                    $productData[$key] = $initialDataProduct->$key;
+                }
+            }
+            return $productData;
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
+
+    private static function existProduct(mysqli_result $result): void
+    {
+        try {
+            if (mysqli_num_rows($result) === 1)
+                throw new Exception("Данный товара уже существует по данному имени!");
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
+
+    private static function anomalyCheck(mysqli_result $result): void
+    {
+        try {
+            if (mysqli_num_rows($result) !== 1)
+                throw new Exception("Ошибка: товара не существует или аномалии в БД, где товара > 1");
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
+}
+
+
+========================================================================================================================
+FILE NAME: dataTablesRepository.php
+FULL PATH: C:\OpenServer\domains\confectioneryShop\src\model\dataTablesRepository.php
+------------------------------------------------------------------------------------------------------------------------
+<?php
+namespace Model;
+
+use mysqli;
+use Exception;
+
+class DataTablesRepository {
+    private mysqli $dataBase;
+
+    public function __construct(mysqli $dataBase)
+    {
+        $this->dataBase = $dataBase;
+    }
+
+    public function getOneDataByID(string $table, int $ID, string $idcolumn, string $columnGet) {
+        $result = null;
+        try {
+            $sqlGetOneData = sprintf("SELECT `%s` FROM `%s` WHERE `%s` = '%d'", $columnGet, $table, $idcolumn, $ID);
+            if (($result = mysqli_query($this->dataBase, $sqlGetOneData)) === false)
+                throw new Exception("Ошибка при получении данных");
+            return $result->fetch_object();
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
+}
+
+?>
+
+
+========================================================================================================================
 FILE NAME: dataUserRepository.php
 FULL PATH: C:\OpenServer\domains\confectioneryShop\src\model\dataUserRepository.php
 ------------------------------------------------------------------------------------------------------------------------
@@ -14532,7 +14752,6 @@ namespace Model;
 use Exception;
 use mysqli;
 use mysqli_result;
-use repository\Database;
 
 class DataUserRepository
 {
@@ -14542,27 +14761,27 @@ class DataUserRepository
     {
         $this->dataBase = $dataBase;
     }
-    public function getDataUserByID(int $ID): bool|object|null
+    public function getDataUserByID(int $ID, int $parametr = 0): bool|object|null
     {
         $result = null;
         try {
             $sqlQueryGetUser = sprintf("SELECT * FROM `users` WHERE `user_ID` = '%d'", $ID);
             if (($result = mysqli_query($this->dataBase, $sqlQueryGetUser)) === false)
                 throw new Exception("Ошибка выдачи информации о пользователе!");
-            DataUserRepository::anomalyCheck($result);
+            self::anomalyCheck($result, $parametr);
             return $result->fetch_object();
         } catch (Exception $ex) {
             die($ex->getMessage());
         }
     }
-    public function getDataUserByLogin(string $login): bool|object|null
+    public function getDataUserByLogin(string $login, int $parametr = 0): bool|object|null
     {
         $result = null;
         try {
             $sqlQueryGetUser = sprintf("SELECT * FROM `users` WHERE `user_Login` = '%s'", $login);
             if (($result = mysqli_query($this->dataBase, $sqlQueryGetUser)) === false)
                 throw new Exception("Ошибка выдачи информации о пользователе!");
-            self::anomalyCheck($result);
+            self::anomalyCheck($result, $parametr);
             return $result->fetch_object();
         } catch (Exception $ex) {
             die($ex->getMessage());
@@ -14570,24 +14789,22 @@ class DataUserRepository
     }
 
 
-    public function insertDataUser(array $userData)
+    public function insertDataUser(array $userData): bool|null
     {
         try {
-            $user_Login = $userData["user_Login"];
-            $user_Email = $userData["user_Email"];
-            $user_Phone = $userData["user_Phone"];
-            $user_Surname = $userData["user_Surname"];
-            $user_Firstname = $userData["user_Name"];
-            $user_Patronymic = $userData["user_Patronymic"] ?? "";
-            $user_Password = $userData["user_Password"];
+            foreach ($userData as $key => $value) {
+                if ($key === "user_Patronymic") {
+                    $$key = $value ?? "";
+                } else {
+                    $$key = $value;
+                }
+            }
 
-            $initialDataUser = $this->getDataUserByLogin($user_Login);
-
-            self::existUser($initialDataUser);
+            $initialDataUser = $this->getDataUserByLogin($user_Login, 1);
 
             $sqlQueryInsertUser = sprintf("INSERT INTO `users`(`user_Login`, `user_Email`, `user_Phone`, `user_Surname`, `user_Firstname`, `user_Patronymic`, `user_Password`) VALUES
-            ('%s', '%s', '%s', '%s', '%s')", $user_Login, $user_Email, $user_Phone, $user_Surname, $user_Firstname, ((!empty($user_Patronymic) ? $user_Patronymic : "NULL")), password_hash($user_Password['pass'], PASSWORD_BCRYPT));
-
+            ('%s', '%s', '%s', '%s', '%s', %s, '%s')", $user_Login, $user_Email, $user_Phone, $user_Surname, $user_Firstname, (empty($user_Patronymic) ? "NULL" : htmlspecialchars("'" . $user_Patronymic . "'", ENT_NOQUOTES)), password_hash($user_Password, PASSWORD_BCRYPT));
+            
             $result = mysqli_query($this->dataBase, $sqlQueryInsertUser);
 
             if (!$result)
@@ -14598,22 +14815,72 @@ class DataUserRepository
             die($ex->getMessage());
         }
     }
-    
-    private static function existUser(mysqli_result $result): void
+
+    public function updateUser(array $userData): bool|null
+    {
+        $result = null;
+        try {
+            $initialDataUser = $this->getDataUserByID($userData["user_ID"]);
+            $userData = self::emptyCheck($userData, $initialDataUser);
+            foreach ($userData as $key => $value) {
+                $$key = $value;
+            }
+            $sqlQueryUpdateUser = sprintf("UPDATE `users` SET
+            `user_Email`='%s',        `user_Phone`='%s',
+            `user_Surname`='%s',      `user_Firstname`='%s',
+            `user_Patronymic`=%s,   `user_Password`='%s'
+            WHERE `user_ID` = '%s'", $user_Email, $user_Phone, $user_Surname, $user_Firstname, (empty($user_Patronymic) ? "NULL" : htmlspecialchars("'" . $user_Patronymic . "'", ENT_NOQUOTES)), password_hash($user_Password, PASSWORD_BCRYPT), $user_ID);
+
+            $result = mysqli_query($this->dataBase, $sqlQueryUpdateUser);
+
+            if (!$result)
+                throw new Exception("Ошибка при обновлении пользователя: возможно, каких-то данные не хватает");
+
+            return $result;
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
+    private static function emptyCheck(array $userData, object $initialDataUser): array|bool
     {
         try {
-            if (mysqli_num_rows($result) === 1)
-                throw new Exception("Данный пользователь уже существует по данному логину!");
+            foreach ($userData as $key => $value) {
+                if (empty($userData[$key])) {
+                    if ($key === "user_Patronymic") continue;
+                    $userData[$key] = $initialDataUser->$key;
+                }
+            }
+            return $userData;
         } catch (Exception $ex) {
             die($ex->getMessage());
         }
     }
 
-    private static function anomalyCheck(mysqli_result $result): void
+    private static function existUser(mysqli_result $result): void
     {
         try {
-            if (mysqli_num_rows($result) !== 1)
-                throw new Exception("Ошибка: пользователя не существует или аномалии в БД, где пользователя > 1");
+            if (mysqli_num_rows($result) === 1)
+                throw new Exception("Данный пользователь уже существует!");
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
+
+    private static function anomalyCheck(mysqli_result $result, int $parametr = 0): void
+    {
+        try {
+            switch ($parametr) {
+                case 0: {
+                        if (mysqli_num_rows($result) !== 1)
+                            throw new Exception("Ошибка: пользователя не существует или аномалии в БД, где пользователя > 1");
+                    };
+                    break;
+                case 1: {
+                        if (mysqli_num_rows($result) >= 1)
+                            throw new Exception("Ошибка: пользователя уже существует или аномалии в БД, где пользователя > 1");
+                    };
+                    break;
+            }
         } catch (Exception $ex) {
             die($ex->getMessage());
         }
@@ -14675,6 +14942,8 @@ namespace router;
 use Model\Authentication;
 use repository\Database;
 
+global $app;
+
 Routing::getMethod("/", "main");
 Routing::getMethod("/catalog", "catalog");
 Routing::getMethod("/about", "about");
@@ -14688,13 +14957,15 @@ Routing::getMethod("/agreement", "agreement");
 Routing::getMethod("/auth", "login");
 Routing::getMethod("/registerNewUser", "register");
 Routing::getMethod("/recoveryPass", "recoveryPass");
-Routing::getMethod("/settings", "settings");
+Routing::getMethod("/profile/settings", "settings");
 
 Routing::getMethod("/test", "testpage");
 
 Routing::postMethod("/login", $app->authentication, "login", $_POST);
 Routing::postMethod("/register", $app->authentication, "register", $_POST);
-Routing::postMethod("/logout", $app->authentication, "logout", $_POST = []);
+Routing::postMethod("/logout", $app->authentication, "logout", $_POST);
+
+Routing::postMethod("/profile/settings/change", $app->userRepository, "updateUser", $_POST);
 
 Routing::action();
 ?>
@@ -15156,8 +15427,11 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\pages\register.php
 FILE NAME: settings.php
 FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\pages\settings.php
 ------------------------------------------------------------------------------------------------------------------------
+<?php if (! isset($_SESSION["user_SESSION"])) header("Location: /") ?>
+
 <!doctype html>
 <html lang="ru">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15169,17 +15443,19 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\pages\settings.php
   <script src="/assets/js/bootstrap.bundle.min.js" defer></script>
   <script src="/assets/js/app.js" defer></script>
 </head>
+
 <body>
 
-<?php include __DIR__ . '/../patterns/header.php'; ?>
+  <?php include __DIR__ . '/../patterns/header.php'; ?>
 
-<main class="page">
-  <?php include __DIR__ . '/../patterns/profile/settings-profile.php'; ?>
-</main>
+  <main class="page">
+    <?php include __DIR__ . '/../patterns/profile/settings-profile.php'; ?>
+  </main>
 
-<?php include __DIR__ . '/../patterns/footer.php'; ?>
+  <?php include __DIR__ . '/../patterns/footer.php'; ?>
 
 </body>
+
 </html>
 
 
@@ -15196,6 +15472,7 @@ echo time();
 FILE NAME: footer.php
 FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\footer.php
 ------------------------------------------------------------------------------------------------------------------------
+<?php global $app; ?>
 <footer class="site-footer">
   <div class="wrap footer-grid">
     <div>
@@ -15204,12 +15481,12 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\footer.php
       </a>
       <div class="f-text">Собственное производство. Доставка и самовывоз.</div>
       <div class="f-text f-gap">
-        Телефон: <a class="link" href="tel:+79990000000">+7 (999) 000-00-00</a><br>
-        Адрес: <span class="f-strong">г. Ваш город, ул. Примерная, 10</span>
+        Телефон: <a class="link" href="tel:<?php echo $app->shopInfo->shop_phone ?>">+<?php echo $app->shopInfo->shop_phone ?></a><br>
+        Адрес: <span class="f-strong"><?php echo $app->shopInfo->shop_address;?></span>
       </div>
       <div class="f-text">
-        ИНН: <span class="f-strong">0000000000</span><br>
-        ОГРН: <span class="f-strong">0000000000000</span>
+        ИНН: <span class="f-strong"><?php echo $app->shopInfo->shop_INN;?></span><br>
+        ОГРН: <span class="f-strong"><?php echo $app->shopInfo->shop_OGRN;?></span>
       </div>
     </div>
 
@@ -15644,9 +15921,8 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\auth\recove
             Продолжить
           </button>
 
-          <div class="auth-links">
-            <a href="/auth">Авторизация</a>
-            <a href="/register">Регистрация</a>
+          <div class="auth-link">
+            <a href="/auth">Вспомнил пароль</a>
           </div>
 
         </form>
@@ -15778,7 +16054,7 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\auth\regist
               <input
                 class="form-control auth-input"
                 type="text"
-                name="user_Name"
+                name="user_Firstname"
                 placeholder="Введите имя"
                 required>
             </div>
@@ -15996,236 +16272,82 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\catalog\cat
 FILE NAME: catalog-products.php
 FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\catalog\catalog-products.php
 ------------------------------------------------------------------------------------------------------------------------
-    <section class="section">
-        <div class="wrap">
-            <div class="section-top">
-                <h2 class="section-title">Товары</h2>
-                <div class="section-sub">Свежая продукция</div>
-            </div>
-            <div class="product-grid">
-                <article class="product-card">
-                    <div class="product-media">
-                        <img
-                            class="product-image"
-                            src="/assets/img/cakes/cake_1_0.jpg"
-                            alt="Шоколадный торт"
-                            loading="lazy"
-                            decoding="async">
-                        <div class="product-tag">
-                            Новинка
-                        </div>
-                    </div>
-                    <div class="product-body">
-                        <div class="product-top">
-                            <div class="product-title">
-                                Шоколадный торт
-                            </div>
-                            <div class="product-info-wrap">
-                                <button
-                                    class="product-info-btn"
-                                    type="button"
-                                    aria-label="Информация о товаре">
-                                    i
-                                </button>
-                                <div class="product-popup">
-                                    <div class="product-popup-line">
-                                        <span class="product-popup-label">
-                                            Описание:
-                                        </span>
-                                        Насыщенный шоколадный бисквит с кремом.
-                                    </div>
-                                    <div class="product-popup-line">
-                                        <span class="product-popup-label">
-                                            Состав:
-                                        </span>
-                                        шоколад, сливки, какао
-                                    </div>
-                                    <div class="product-popup-line">
-                                        <span class="product-popup-label">
-                                            КБЖУ:
-                                        </span>
-                                        420 / 7 / 24 / 42
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="product-actions">
-                            <button class="btn btn-primary w-100">
-                                В корзину
-                            </button>
-                        </div>
-                    </div>
-                </article>
-                <article class="product-card">
-                    <div class="product-media">
-                        <img
-                            class="product-image"
-                            src="/assets/img/cakes/cake_1_1.jpg"
-                            alt="Капкейк"
-                            loading="lazy"
-                            decoding="async">
-                    </div>
-                    <div class="product-body">
-                        <div class="product-top">
-                            <div class="product-title">
-                                Капкейк ванильный
-                            </div>
-                            <div class="product-info-wrap">
-                                <button
-                                    class="product-info-btn"
-                                    type="button"
-                                    aria-label="Информация о товаре">
-                                    i
-                                </button>
-                                <div class="product-popup">
-                                    <div class="product-popup-line">
-                                        <span class="product-popup-label">
-                                            Описание:
-                                        </span>
-                                        Нежный крем и воздушный бисквит.
-                                    </div>
-                                    <div class="product-popup-line">
-                                        <span class="product-popup-label">
-                                            Состав:
-                                        </span>
-                                        сливки, ваниль, мука
-                                    </div>
-                                    <div class="product-popup-line">
-                                        <span class="product-popup-label">
-                                            КБЖУ:
-                                        </span>
-                                        310 / 5 / 18 / 32
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="product-actions">
-                            <button class="btn btn-primary w-100">
-                                В корзину
-                            </button>
-                        </div>
-                    </div>
-                </article>
-                <article class="product-card">
-                    <div class="product-media">
-                        <img
-                            class="product-image"
-                            src="/assets/img/cakes/cake_1_1.jpg"
-                            alt="Капкейк"
-                            loading="lazy"
-                            decoding="async">
-                    </div>
-                    <div class="product-body">
-                        <div class="product-top">
-                            <div class="product-title">
-                                Капкейк ванильный
-                            </div>
-                            <div class="product-info-wrap">
-                                <button
-                                    class="product-info-btn"
-                                    type="button"
-                                    aria-label="Информация о товаре">
-                                    i
-                                </button>
-                                <div class="product-popup">
-                                    <div class="product-popup-line">
-                                        <span class="product-popup-label">
-                                            Описание:
-                                        </span>
-                                        Нежный крем и воздушный бисквит.
-                                    </div>
-                                    <div class="product-popup-line">
-                                        <span class="product-popup-label">
-                                            Состав:
-                                        </span>
-                                        сливки, ваниль, мука
-                                    </div>
-                                    <div class="product-popup-line">
-                                        <span class="product-popup-label">
-                                            КБЖУ:
-                                        </span>
-                                        310 / 5 / 18 / 32
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="product-actions">
-                            <button class="btn btn-primary w-100">
-                                В корзину
-                            </button>
-                        </div>
-                    </div>
-                </article>
-                <article class="product-card">
-                    <div class="product-media">
-                        <img
-                            class="product-image"
-                            src="/assets/img/cakes/cake_1_1.jpg"
-                            alt="Капкейк"
-                            loading="lazy"
-                            decoding="async">
-                    </div>
-                    <div class="product-body">
-                        <div class="product-top">
-                            <div class="product-title">
-                                Капкейк ванильный
-                            </div>
-                            <div class="product-info-wrap">
-                                <button
-                                    class="product-info-btn"
-                                    type="button"
-                                    aria-label="Информация о товаре">
-                                    i
-                                </button>
-                                <div class="product-popup">
-                                    <div class="product-popup-line">
-                                        <span class="product-popup-label">
-                                            Описание:
-                                        </span>
-                                        Нежный крем и воздушный бисквит.
-                                    </div>
-                                    <div class="product-popup-line">
-                                        <span class="product-popup-label">
-                                            Состав:
-                                        </span>
-                                        сливки, ваниль, мука
-                                    </div>
-                                    <div class="product-popup-line">
-                                        <span class="product-popup-label">
-                                            КБЖУ:
-                                        </span>
-                                        310 / 5 / 18 / 32
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="product-actions">
-                            <button class="btn btn-primary w-100">
-                                В корзину
-                            </button>
-                        </div>
-                    </div>
-                </article>
-            </div>
+<?php 
+    global $app; 
+    $products = $app->productRepository->getDataProducts();
+?>
+<section class="section">
+    <div class="wrap">
+        <div class="section-top">
+            <h2 class="section-title">Товары</h2>
+            <div class="section-sub">Свежая продукция</div>
         </div>
-    </section>
+        <div class="product-grid">
+            <?php foreach ($products as $variable): ?>
+            <article class="product-card">
+                <div class="product-media">
+                    <img class="product-image" src="/assets/img/<?= $variable['product_DemoPhoto']?>" alt="<?= $variable['product_Name'] ?>" loading="lazy" decoding="async">
+                    <?php if (!empty($variable['product_Status'])): ?>
+                    <div class="product-tag"> <?= $app->tablesRepository->getOneDataByID("status_product", (int)$variable['product_Status'], "status_ID", "status_Type")->status_Type; ?> </div>
+                    <?php endif; ?>
+                </div>
+                <div class="product-body">
+                    <div class="product-top">
+                        <div class="product-title"> <?= $variable['product_Name'] ?> </div>
+                        <div class="product-info-wrap">
+                            <button class="product-info-btn" type="button" aria-label="Информация о товаре"> i </button>
+                            <div class="product-popup">
+                                <div class="product-popup-line">
+                                    <span class="product-popup-label"> Описание: </span>
+                                        <?= $variable['product_Description'] ?>
+                                </div>
+                                <div class="product-popup-line">
+                                    <span class="product-popup-label"> Состав: </span>
+                                        <?= $variable['product_Compound'] ?>
+                                </div>
+                                <div class="product-popup-line">
+                                    <span class="product-popup-label"> Вес: </span>
+                                       <?= $variable['product_Weight'] ?> кг.   
+                                </div>
+                                <div class="product-popup-line">
+                                    <span class="product-popup-label"> КБЖУ (в 100 гр.): </span>
+                                       <?= $variable['product_Calories'] ?> / <?= $variable['product_Protein'] ?> / <?= $variable['product_Fat'] ?> / <?= $variable['product_Carbohydrates'] ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product-actions">
+                        <button class="btn btn-primary w-100">
+                            В корзину
+                        </button>
+                    </div>
+                </div>
+            </article>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
 
 
 ========================================================================================================================
 FILE NAME: buttonAuthProfile.php
 FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\header\buttonAuthProfile.php
 ------------------------------------------------------------------------------------------------------------------------
-<?php // global $userData; ?>
+<?php global $app; ?>
 <?php if (!isset($_SESSION["user_SESSION"])): ?>
     <a href="/auth" class="btn btn-soft auth-btn">Авторизоваться</a>
 <?php else: ?>
     <div class="dropdown">
-        <button class="btn btn-soft auth-btn dropdown-toggle" type="button" data-bs-toggle="dropdown"><?= htmlspecialchars($userData->FullName) ?></button>
+        <button class="btn btn-soft auth-btn dropdown-toggle" type="button" data-bs-toggle="dropdown"><?= htmlspecialchars($app->userData->FullName) ?></button>
         <ul class="dropdown-menu dropdown-menu-end">
             <li>
-                <a class="dropdown-item" href="/settings">Настройки</a>
+                <a class="dropdown-item" href="/profile/settings">Настройки</a>
             </li>
             <?php if ((int)$_SESSION["user_SESSION"]["user_Role"] === 2): ?>
+                <li>
+                    <hr class="dropdown-divider">
+
+                </li>
                 <li>
                     <a class="dropdown-item" href="/admin">Панель администратора</a>
                 </li>
@@ -16235,9 +16357,9 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\header\butt
             </li>
             <li>
                 <!-- <a class="dropdown-item" href="/logout">Выйти</a> -->
-                 <form action="/logout" method="post">
+                <form action="/logout" method="post">
                     <button class="dropdown-item">Выйти</button>
-                 </form>
+                </form>
             </li>
         </ul>
     </div>
@@ -16256,7 +16378,7 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\header\cata
 4. Template
 5. Print template
 */
-
+global $app;
 $list = mysqli_query($app->connectionDB, "SELECT * FROM `catalog`");
 
 // Get all catalog Information
@@ -16513,8 +16635,7 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\help\faq-co
       <img
         class="help-hero-image"
         src="/assets/img/FAQ/headerFAQ.jpg"
-        alt="FAQ"
-      >
+        alt="FAQ">
 
       <div class="help-hero-overlay"></div>
 
@@ -16543,19 +16664,17 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\help\faq-co
       <div class="faq-collapse-item">
 
         <button
-          class="faq-collapse-button"
+          class="faq-collapse-button collapsed"
           type="button"
           data-bs-toggle="collapse"
-          data-bs-target="#faq1"
-        >
+          data-bs-target="#faq1">
           Используются ли натуральные ингредиенты?
         </button>
 
         <div
           id="faq1"
-          class="collapse show"
-          data-bs-parent=".faq-accordion"
-        >
+          class="collapse"
+          data-bs-parent=".faq-accordion">
           <div class="faq-collapse-content">
             Для производства продукции используются проверенные ингредиенты и сырьё, соответствующее требованиям качества и безопасности.
           </div>
@@ -16569,16 +16688,14 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\help\faq-co
           class="faq-collapse-button collapsed"
           type="button"
           data-bs-toggle="collapse"
-          data-bs-target="#faq2"
-        >
+          data-bs-target="#faq2">
           Где производится продукция?
         </button>
 
         <div
           id="faq2"
           class="collapse"
-          data-bs-parent=".faq-accordion"
-        >
+          data-bs-parent=".faq-accordion">
           <div class="faq-collapse-content">
             Основная часть ассортимента производится на собственном кондитерском производстве.
           </div>
@@ -16592,16 +16709,14 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\help\faq-co
           class="faq-collapse-button collapsed"
           type="button"
           data-bs-toggle="collapse"
-          data-bs-target="#faq3"
-        >
+          data-bs-target="#faq3">
           Можно ли оформить индивидуальный заказ?
         </button>
 
         <div
           id="faq3"
           class="collapse"
-          data-bs-parent=".faq-accordion"
-        >
+          data-bs-parent=".faq-accordion">
           <div class="faq-collapse-content">
             Да, магазин поддерживает оформление индивидуальных заказов для мероприятий, праздников и корпоративных событий.
           </div>
@@ -16615,16 +16730,14 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\help\faq-co
           class="faq-collapse-button collapsed"
           type="button"
           data-bs-toggle="collapse"
-          data-bs-target="#faq4"
-        >
+          data-bs-target="#faq4">
           Есть ли сезонные товары?
         </button>
 
         <div
           id="faq4"
           class="collapse"
-          data-bs-parent=".faq-accordion"
-        >
+          data-bs-parent=".faq-accordion">
           <div class="faq-collapse-content">
             Да, каталог регулярно обновляется и включает сезонную продукцию и ограниченные коллекции.
           </div>
@@ -16638,16 +16751,14 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\help\faq-co
           class="faq-collapse-button collapsed"
           type="button"
           data-bs-toggle="collapse"
-          data-bs-target="#faq5"
-        >
+          data-bs-target="#faq5">
           Можно ли заказать доставку заранее?
         </button>
 
         <div
           id="faq5"
           class="collapse"
-          data-bs-parent=".faq-accordion"
-        >
+          data-bs-parent=".faq-accordion">
           <div class="faq-collapse-content">
             Да, при оформлении заказа можно выбрать удобную дату и временной промежуток доставки.
           </div>
@@ -16661,16 +16772,14 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\help\faq-co
           class="faq-collapse-button collapsed"
           type="button"
           data-bs-toggle="collapse"
-          data-bs-target="#faq6"
-        >
+          data-bs-target="#faq6">
           Есть ли ограничения по способам оплаты?
         </button>
 
         <div
           id="faq6"
           class="collapse"
-          data-bs-parent=".faq-accordion"
-        >
+          data-bs-parent=".faq-accordion">
           <div class="faq-collapse-content">
             Большинство заказов можно оплатить любым доступным способом. Некоторые индивидуальные заказы требуют предварительной оплаты.
           </div>
@@ -16684,16 +16793,14 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\help\faq-co
           class="faq-collapse-button collapsed"
           type="button"
           data-bs-toggle="collapse"
-          data-bs-target="#faq7"
-        >
+          data-bs-target="#faq7">
           Как долго хранится продукция?
         </button>
 
         <div
           id="faq7"
           class="collapse"
-          data-bs-parent=".faq-accordion"
-        >
+          data-bs-parent=".faq-accordion">
           <div class="faq-collapse-content">
             Срок хранения зависит от конкретного изделия и состава. Информация указывается на упаковке или карточке товара.
           </div>
@@ -16707,16 +16814,14 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\help\faq-co
           class="faq-collapse-button collapsed"
           type="button"
           data-bs-toggle="collapse"
-          data-bs-target="#faq8"
-        >
+          data-bs-target="#faq8">
           Можно ли узнать состав продукции?
         </button>
 
         <div
           id="faq8"
           class="collapse"
-          data-bs-parent=".faq-accordion"
-        >
+          data-bs-parent=".faq-accordion">
           <div class="faq-collapse-content">
             Да, информация о составе, пищевой ценности и возможных аллергенах доступна в карточке товара.
           </div>
@@ -17153,10 +17258,12 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\partners\pa
 FILE NAME: settings-profile.php
 FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\profile\settings-profile.php
 ------------------------------------------------------------------------------------------------------------------------
+<?php global $app; ?>
+
 <main class="page profile-page">
     <div class="wrap">
         <section class="profile-hero">
-            <img src="/assets/img/profile/profile-banner.jpg" alt="Настройки профиля" class="profile-hero-image">
+            <img src="/assets/img/cakes/cake_2_0.jpg" alt="Настройки профиля" class="profile-hero-image">
             <div class="profile-hero-overlay"></div>
             <div class="profile-hero-content">
                 <div class="profile-hero-kicker">Личный кабинет</div>
@@ -17175,59 +17282,56 @@ FULL PATH: C:\OpenServer\domains\confectioneryShop\src\view\patterns\profile\set
                         Изменения сохраняются после отправки формы.
                     </div>
                 </div>
-                <form action="/profile/settings" method="POST" class="profile-form">
+                <form action="/profile/settings/change" method="POST" class="profile-form">
                     <div class="profile-grid">
-                        <div class="profile-field">
+                        <div class="profile-field input-died-wrapper">
                             <label>ID пользователя</label>
-                            <input type="text" value="<?= $user["users_ID"] ?>" disabled>
+                            <input type="text" class="input-died" name="user_ID" value="<?= $app->userData->user_ID ?>">
                         </div>
-                        <div class="profile-field">
+                        <div class="profile-field input-died-wrapper">
                             <label>Роль</label>
-                            <input type="text" value="<?= $user["users_Role"] ?>" disabled>
+                            <input type="text" class="input-died" name="user_Role" value="<?= $app->userData->user_Role ?>">
                         </div>
-                        <div class="profile-field">
+                        <div class="profile-field input-died-wrapper">
                             <label>Логин</label>
-                            <input type="text" value="<?= $user["users_Login"] ?>" disabled>
+                            <input type="text" class="input-died" name="user_Login" value="<?= $app->userData->user_Login ?>">
                         </div>
                         <div class="profile-field">
-                            <label>Полное имя</label>
-                            <input
-                                type="text"
-                                name="fullname"
-                                value="<?= htmlspecialchars($user["users_FullName"]) ?>">
+                            <label>Фамилия</label>
+                            <input type="text" name="user_Surname" value="<?= htmlspecialchars($app->userData->user_Surname) ?>">
+                        </div>
+                        <div class="profile-field">
+                            <label>Имя</label>
+                            <input type="text" name="user_Firstname" value="<?= htmlspecialchars($app->userData->user_Firstname) ?>">
+                        </div>
+                        <div class="profile-field">
+                            <label>Отчество</label>
+                            <input type="text" name="user_Patronymic" value="<?= htmlspecialchars($app->userData->user_Patronymic) ?>" placeholder="при наличии">
                         </div>
                         <div class="profile-field">
                             <label>Email</label>
-                            <input
-                                type="email"
-                                name="email"
-                                value="<?= htmlspecialchars($user["users_Email"]) ?>">
+                            <input type="email" name="user_Email" value="<?= htmlspecialchars($app->userData->user_Email) ?>">
                         </div>
                         <div class="profile-field">
                             <label>Телефон</label>
-                            <input
-                                type="text"
-                                name="phone"
-                                value="<?= htmlspecialchars($user["users_Phone"]) ?>">
+                            <input type="text" name="user_Phone" value="<?= htmlspecialchars($app->userData->user_Phone) ?>">
                         </div>
                         <div class="profile-field">
                             <label>Новый пароль</label>
-                            <input
-                                type="password"
-                                name="password"
-                                placeholder="Введите новый пароль">
+                            <input type="password" name="user_Password" placeholder="Введите новый пароль">
                         </div>
                     </div>
                     <div class="profile-actions">
                         <button type="submit" class="btn btn-primary profile-save-btn">
                             Сохранить изменения
                         </button>
-                        <form action="/logout" method="POST" class="profile-logout-form">
-                            <button type="submit" class="btn btn-ghost profile-logout-btn" >
-                                Выйти из аккаунта
-                            </button>
-                        </form>
                     </div>
+                </form>
+                <form action="/logout" method="POST" class="profile-logout-form">
+                    <button type="submit" class="btn btn-ghost profile-logout-btn">
+                        Выйти из аккаунта
+                    </button>
+                    <input class="invisible" name="_returnTo" value="/" placeholder="returnToLink">
                 </form>
             </div>
         </section>
