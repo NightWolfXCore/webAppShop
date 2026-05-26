@@ -1,4 +1,5 @@
-    <section class="section">
+<?php global $app; ?>
+<section class="section">
         <div class="wrap">
             <div class="section-top">
                 <h2 class="section-title">Товары</h2>

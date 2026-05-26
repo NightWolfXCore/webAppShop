@@ -1219,6 +1219,11 @@ END #CATALOG
     align-items: stretch;
 }
 
+.auth-layout-center {
+    display: flex;
+    justify-content: center;
+}
+
 .auth-side {
     position: relative;
     overflow: hidden;
@@ -2148,6 +2153,20 @@ END #HEADER AUTH
     background: rgba(0, 0, 0, .04);
     color: rgba(43, 36, 31, .62);
     cursor: not-allowed;
+}
+
+.profile-field input.input-died {
+    background: rgba(0, 0, 0, .04);
+    color: rgba(43, 36, 31, .62);
+    cursor: not-allowed;
+}
+
+.input-died-wrapper {
+    cursor: not-allowed;
+}
+
+.input-died {
+    pointer-events: none;
 }
 
 .profile-actions {

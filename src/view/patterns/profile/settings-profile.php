@@ -22,61 +22,43 @@
                         Изменения сохраняются после отправки формы.
                     </div>
                 </div>
-                <form action="/profile/settings" method="POST" class="profile-form">
+                <form action="/profile/settings/change" method="POST" class="profile-form">
                     <div class="profile-grid">
-                        <div class="profile-field">
+                        <div class="profile-field input-died-wrapper">
                             <label>ID пользователя</label>
-                            <input type="text" value="<?= $app->userData->user_ID ?>" disabled>
+                            <input type="text" class="input-died" name="user_ID" value="<?= $app->userData->user_ID ?>">
                         </div>
-                        <div class="profile-field">
+                        <div class="profile-field input-died-wrapper">
                             <label>Роль</label>
-                            <input type="text" value="<?= $app->userData->user_Role ?>" disabled>
+                            <input type="text" class="input-died" name="user_Role" value="<?= $app->userData->user_Role ?>">
                         </div>
-                        <div class="profile-field">
+                        <div class="profile-field input-died-wrapper">
                             <label>Логин</label>
-                            <input type="text" value="<?= $app->userData->user_Login ?>" disabled>
+                            <input type="text" class="input-died" name="user_Login" value="<?= $app->userData->user_Login ?>">
                         </div>
                         <div class="profile-field">
                             <label>Фамилия</label>
-                            <input
-                                type="text"
-                                name="surname"
-                                value="<?= htmlspecialchars($app->userData->user_Surname) ?>">
+                            <input type="text" name="user_Surname" value="<?= htmlspecialchars($app->userData->user_Surname) ?>">
                         </div>
                         <div class="profile-field">
                             <label>Имя</label>
-                            <input
-                                type="text"
-                                name="firstname"
-                                value="<?= htmlspecialchars($app->userData->user_Firstname) ?>">
+                            <input type="text" name="user_Firstname" value="<?= htmlspecialchars($app->userData->user_Firstname) ?>">
                         </div>
                         <div class="profile-field">
                             <label>Отчество</label>
-                            <input
-                                type="text"
-                                name="patronymic"
-                                value="<?= htmlspecialchars($app->userData->user_Patronymic) ?>" placeholder="при наличии">
+                            <input type="text" name="user_Patronymic" value="<?= htmlspecialchars($app->userData->user_Patronymic) ?>" placeholder="при наличии">
                         </div>
                         <div class="profile-field">
                             <label>Email</label>
-                            <input
-                                type="email"
-                                name="email"
-                                value="<?= htmlspecialchars($app->userData->user_Email) ?>">
+                            <input type="email" name="user_Email" value="<?= htmlspecialchars($app->userData->user_Email) ?>">
                         </div>
                         <div class="profile-field">
                             <label>Телефон</label>
-                            <input
-                                type="text"
-                                name="phone"
-                                value="<?= htmlspecialchars($app->userData->user_Phone) ?>">
+                            <input type="text" name="user_Phone" value="<?= htmlspecialchars($app->userData->user_Phone) ?>">
                         </div>
                         <div class="profile-field">
                             <label>Новый пароль</label>
-                            <input
-                                type="password"
-                                name="password"
-                                placeholder="Введите новый пароль">
+                            <input type="password" name="user_Password" placeholder="Введите новый пароль">
                         </div>
                     </div>
                     <div class="profile-actions">

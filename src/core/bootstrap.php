@@ -5,6 +5,7 @@ namespace core;
 use Model\Authentication;
 use repository\Database;
 use Model\DataUserRepository;
+use Model\DataProductRepository;
 use mysqli;
 
 class bootstrap
@@ -13,7 +14,10 @@ class bootstrap
     public mysqli $connectionDB;
     public DataUserRepository $userRepository;
     public Authentication $authentication;
+    public DataProductRepository $productRepository;
     public ?object $userData;
+    public ?object $productData; 
+
     public ?object $shopInfo;
 
     public function __construct()
@@ -23,6 +27,7 @@ class bootstrap
         $this->userRepository = new DataUserRepository($this->connectionDB);
         $this->authentication = new Authentication($this->userRepository);
         $this->userData = isset($_SESSION["user_SESSION"]) ? $this->userRepository->getDataUserByID($_SESSION["user_SESSION"]["user_ID"]) : null;
+        $this->productRepository = new DataProductRepository($this->connectionDB);
 
         if (isset($_SESSION["user_SESSION"])) {
             if (empty($this->userData->user_Patronymic)) {

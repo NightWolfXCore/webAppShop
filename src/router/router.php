@@ -19,13 +19,15 @@ Routing::getMethod("/agreement", "agreement");
 Routing::getMethod("/auth", "login");
 Routing::getMethod("/registerNewUser", "register");
 Routing::getMethod("/recoveryPass", "recoveryPass");
-Routing::getMethod("/settings", "settings");
+Routing::getMethod("/profile/settings", "settings");
 
 Routing::getMethod("/test", "testpage");
 
 Routing::postMethod("/login", $app->authentication, "login", $_POST);
 Routing::postMethod("/register", $app->authentication, "register", $_POST);
 Routing::postMethod("/logout", $app->authentication, "logout", $_POST);
+
+Routing::postMethod("/profile/settings/change", $app->userRepository, "updateUser", $_POST);
 
 Routing::action();
 ?>

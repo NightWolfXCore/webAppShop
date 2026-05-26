@@ -36,9 +36,8 @@
             Продолжить
           </button>
 
-          <div class="auth-links">
-            <a href="/auth">Авторизация</a>
-            <a href="/register">Регистрация</a>
+          <div class="auth-link">
+            <a href="/auth">Вспомнил пароль</a>
           </div>
 
         </form>

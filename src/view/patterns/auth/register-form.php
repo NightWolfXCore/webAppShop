@@ -113,7 +113,7 @@
               <input
                 class="form-control auth-input"
                 type="text"
-                name="user_Name"
+                name="user_Firstname"
                 placeholder="Введите имя"
                 required>
             </div>

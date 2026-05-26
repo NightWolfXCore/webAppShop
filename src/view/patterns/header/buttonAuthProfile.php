@@ -6,9 +6,13 @@
         <button class="btn btn-soft auth-btn dropdown-toggle" type="button" data-bs-toggle="dropdown"><?= htmlspecialchars($app->userData->FullName) ?></button>
         <ul class="dropdown-menu dropdown-menu-end">
             <li>
-                <a class="dropdown-item" href="/settings">Настройки</a>
+                <a class="dropdown-item" href="/profile/settings">Настройки</a>
             </li>
             <?php if ((int)$_SESSION["user_SESSION"]["user_Role"] === 2): ?>
+                <li>
+                    <hr class="dropdown-divider">
+
+                </li>
                 <li>
                     <a class="dropdown-item" href="/admin">Панель администратора</a>
                 </li>
@@ -18,9 +22,9 @@
             </li>
             <li>
                 <!-- <a class="dropdown-item" href="/logout">Выйти</a> -->
-                 <form action="/logout" method="post">
+                <form action="/logout" method="post">
                     <button class="dropdown-item">Выйти</button>
-                 </form>
+                </form>
             </li>
         </ul>
     </div>
