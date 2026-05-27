@@ -51,11 +51,19 @@ $products = $app->productRepository->getDataProducts();
                                 <?= number_format($variable['product_Cost'], 0, '.', ' ') ?> ₽
                             </div>
                         </div>
+                        <?php if (isset($_SESSION['user_SESSION'])): ?>
                         <div class="product-actions">
-                            <button class="btn btn-primary w-100">
+                            <button
+                                class="btn btn-primary w-100 add-to-cart"
+                                data-id="<?= $variable['product_ID'] ?>"
+                                data-title="<?= htmlspecialchars($variable['product_Name']) ?>"
+                                data-description="<?= htmlspecialchars($variable['product_Description']) ?>"
+                                data-price="<?= $variable['product_Cost'] ?>"
+                                data-image="<?= htmlspecialchars($variable['product_DemoPhoto']) ?>">
                                 В корзину
                             </button>
                         </div>
+                        <?php endif; ?>
                     </div>
                 </article>
             <?php endforeach; ?>

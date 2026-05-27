@@ -20,6 +20,7 @@ Routing::getMethod("/auth", "login");
 Routing::getMethod("/registerNewUser", "register");
 Routing::getMethod("/recoveryPass", "recoveryPass");
 Routing::getMethod("/profile/settings", "settings");
+Routing::getMethod("/cart", "cart");
 
 Routing::getMethod("/test", "testpage");
 

@@ -8,8 +8,7 @@
   <link rel="stylesheet" href="/assets/css/bootstrap.css">
   <link rel="stylesheet" href="/assets/css/app.css">
 
-  <script src="/assets/js/bootstrap.bundle.min.js" defer></script>
-  <script src="/assets/js/app.js" defer></script>
+  <?php include __DIR__ . "/../patterns/scripts.php"; ?>
 </head>
 <body>
 
