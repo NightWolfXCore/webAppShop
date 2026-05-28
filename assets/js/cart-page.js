@@ -87,3 +87,25 @@ function renderCart() {
 }
 
 document.addEventListener('DOMContentLoaded', renderCart);
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    renderCart();
+
+    const submitButton = document.getElementById('cart-submit-but');
+
+    if (!submitButton) {
+        return;
+    }
+
+    submitButton.addEventListener('click', () => {
+
+        const cart = getCart();
+
+        const hiddenInput = document.getElementById('cart-products-input');
+
+        hiddenInput.value = JSON.stringify(cart);
+
+    });
+
+});

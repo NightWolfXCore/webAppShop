@@ -98,6 +98,10 @@ $phone = $app->userData->user_Phone;
                             </span>
                         </div>
                     </div>
+                    <input type="hidden" name="cart_products" id="cart-products-input">
+                    <div class="invisible">
+                        <input name="_returnTo" value="/" placeholder="returnToLink">
+                    </div>
                     <button type="submit" id="cart-submit-but" class="btn btn-primary cart-submit">
                         Оформить заказ
                     </button>
