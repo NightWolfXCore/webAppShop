@@ -23,6 +23,17 @@ class DataTablesRepository {
             die($ex->getMessage());
         }
     }
+    public function getAllDataByNameTable(string $table) {
+        $result = null;
+        try {
+            $sqlGetAllData = sprintf("SELECT * FROM `%s`", $table);
+            if (($result = mysqli_query($this->dataBase, $sqlGetAllData)) === false)
+                throw new Exception("Ошибка при получении данных");
+            return $result->fetch_all(MYSQLI_ASSOC);
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
 }
 
 ?>

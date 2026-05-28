@@ -20,7 +20,19 @@ class DataProductRepository
         try {
             $sqlQueryGetProducts = "SELECT * FROM `products`";
             if (($result = mysqli_query($this->dataBase, $sqlQueryGetProducts)) === false)
-                throw new Exception("Ошибка выдачи информации о товаре!");
+                throw new Exception("Ошибка выдачи информации о товарах!");
+            return $result->fetch_all(MYSQLI_ASSOC);
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
+    public function getDataProductsByCategory(int $cat): bool|array|null
+    {
+        $result = null;
+        try {
+            $sqlQueryGetProduct = sprintf("SELECT * FROM `products` WHERE `product_Category` = '%d'", $cat);
+            if (($result = mysqli_query($this->dataBase, $sqlQueryGetProduct)) === false)
+                throw new Exception("Ошибка выдачи информации о товарах!");
             return $result->fetch_all(MYSQLI_ASSOC);
         } catch (Exception $ex) {
             die($ex->getMessage());
@@ -52,8 +64,6 @@ class DataProductRepository
             die($ex->getMessage());
         }
     }
-
-
     public function insertDataProduct(array $productData): bool|null
     {
         try {
@@ -99,13 +109,13 @@ class DataProductRepository
             `product_Fat`='%s',             `product_Calories`='%s',
             `product_Cost`='%s',            `product_Manufacturer`='%s',
             `product_DemoPhoto`=%s
-            WHERE `product_ID` = '%s'", $product_Name, $product_Description, $product_Compound, $product_Weight, $product_Protein, $product_Carbohydrates, $product_Fat, $product_Calories, $product_Cost, $product_Manufacturer, (empty($product_DemoPhoto) ? "NULL" : htmlspecialchars("'".$product_DemoPhoto."'", ENT_NOQUOTES)), $product_ID);
+            WHERE `product_ID` = '%s'", $product_Name, $product_Description, $product_Compound, $product_Weight, $product_Protein, $product_Carbohydrates, $product_Fat, $product_Calories, $product_Cost, $product_Manufacturer, (empty($product_DemoPhoto) ? "NULL" : htmlspecialchars("'" . $product_DemoPhoto . "'", ENT_NOQUOTES)), $product_ID);
 
             $result = mysqli_query($this->dataBase, $sqlQueryUpdateProduct);
 
             if (!$result)
                 throw new Exception("Ошибка при обновлении товара: возможно, каких-то данные не хватает");
-            
+
             return $result;
         } catch (Exception $ex) {
             die($ex->getMessage());

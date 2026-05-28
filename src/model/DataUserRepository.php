@@ -82,7 +82,7 @@ class DataUserRepository
             `user_Email`='%s',        `user_Phone`='%s',
             `user_Surname`='%s',      `user_Firstname`='%s',
             `user_Patronymic`=%s,   `user_Password`='%s'
-            WHERE `user_ID` = '%s'", $user_Email, $user_Phone, $user_Surname, $user_Firstname, (empty($user_Patronymic) ? "NULL" : htmlspecialchars("'" . $user_Patronymic . "'", ENT_NOQUOTES)), password_hash($user_Password, PASSWORD_BCRYPT), $user_ID);
+            WHERE `user_ID` = '%s'", $user_Email, $user_Phone, $user_Surname, $user_Firstname, (empty($user_Patronymic) ? "NULL" : htmlspecialchars("'" . $user_Patronymic . "'", ENT_NOQUOTES)), ((password_needs_rehash($user_Password, PASSWORD_BCRYPT)) ? password_hash($user_Password, PASSWORD_BCRYPT) : $user_Password), $user_ID);
 
             $result = mysqli_query($this->dataBase, $sqlQueryUpdateUser);
 

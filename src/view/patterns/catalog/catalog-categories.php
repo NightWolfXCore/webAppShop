@@ -1,3 +1,8 @@
+<?php
+global $app;
+$cat = $_GET['cat'] ?? null;
+$categories = $app->tablesRepository->getAllDataByNameTable("category_product");
+?>
 <section class="section">
   <div class="wrap">
 
@@ -7,59 +12,23 @@
     </div>
 
     <div class="cat-grid">
+      <?php foreach ($categories as $variable): ?>
+        <?php if ($variable['category_ID'] === $cat) continue; ?>
+        <a class="cat-card" href="/catalog?cat=<?= $variable['category_ID'] ?>">
 
-      <a class="cat-card" href="/catalog?cat=1">
+          <img
+            class="cat-image"
+            src="/assets/img/<?= $variable['category_Photo'] ?>"
+            alt="<?= $variable['category_Name'] ?>"
+            loading="lazy"
+            decoding="async">
 
-        <img
-          class="cat-image"
-          src="/assets/img/cakes/cake_2_0.jpg"
-          alt="Торты"
-          loading="lazy"
-          decoding="async"
-        >
+          <div class="cat-overlay">
+            <div class="cat-title"><?= $variable['category_Name'] ?></div>
+          </div>
 
-        <div class="cat-overlay">
-          <div class="cat-title">Торты</div>
-          <div class="cat-text">Классика и авторские</div>
-        </div>
-
-      </a>
-
-      <a class="cat-card" href="/catalog?cat=2">
-
-        <img
-          class="cat-image"
-          src="/assets/img/cakes/cake_2_1.jpg"
-          alt="Пирожные"
-          loading="lazy"
-          decoding="async"
-        >
-
-        <div class="cat-overlay">
-          <div class="cat-title">Пирожные</div>
-          <div class="cat-text">Нежные и лёгкие</div>
-        </div>
-
-      </a>
-
-      <a class="cat-card" href="/catalog?cat=3">
-
-        <img
-          class="cat-image"
-          src="/assets/img/cakes/cake_2_2.jpg"
-          alt="Капкейки"
-          loading="lazy"
-          decoding="async"
-        >
-
-        <div class="cat-overlay">
-          <div class="cat-title">Капкейки</div>
-          <div class="cat-text">Удобно брать с собой</div>
-        </div>
-
-      </a>
-
+        </a>
+      <?php endforeach; ?>
     </div>
-
   </div>
 </section>

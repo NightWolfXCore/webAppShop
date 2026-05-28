@@ -1,61 +1,61 @@
 <?php
 /* MY english is so bad 
-1. Get Info catalog
+1. Get Info category
 2. Sort info via variable
-3. Group parent and no-parent catalog
+3. Group parent and no-parent category
 4. Template
 5. Print template
 */
 global $app;
-$list = mysqli_query($app->connectionDB, "SELECT * FROM `catalog`");
+$list = mysqli_query($app->connectionDB, "SELECT * FROM `category_product`");
 
-// Get all catalog Information
+// Get all category Information
 
 function getInfoCat(mysqli_result $list)
 {
-    $catalog = null;
+    $category = null;
     while ($row = $list->fetch_assoc()) {
-        $catalog[$row["catalog_ID"]] = $row;
+        $category[$row["category_ID"]] = $row;
     }
-    return $catalog;
+    return $category;
 }
 
 // Sort and group them (английский учить нужно, я знаю) 
 
 function sorting(array $data)
 {
-    $catalogGrouped = null;
+    $categoryGrouped = null;
     foreach ($data as $ID => &$node) {
-        if (!$node["catalog_Parent"]) {
-            $catalogGrouped[$ID] = &$node;
+        if (!$node["category_Parent"]) {
+            $categoryGrouped[$ID] = &$node;
         } else {
-            $data[$node["catalog_Parent"]]["catalog_Childs"][$ID] = &$node;
+            $data[$node["category_Parent"]]["category_Childs"][$ID] = &$node;
         }
     }
-    return $catalogGrouped;
+    return $categoryGrouped;
 }
 
-$catalog = getInfoCat($list); // Получаем инфу
-$tree = sorting($catalog); // Делаем дерево :D
+$category = getInfoCat($list); // Получаем инфу
+$tree = sorting($category); // Делаем дерево :D
 
-function oneCatalog(array $catalog)
+function onecategory(array $category)
 {
-    $menu = sprintf('<li><a class="dropdown-item dd-item" href="/catalog?cat=%d">%s</a></li>', (int)$catalog["catalog_ID"], $catalog["catalog_Name"]);
-    if (isset($catalog["catalog_Childs"])) {
-        $menu .= sprintf('<ul class="dropdown-menu dd-menu">%s</ul>', showAll($catalog["catalog_Childs"]));
+    $menu = sprintf('<li><a class="dropdown-item dd-item" href="/catalog?cat=%d">%s</a></li>', (int)$category["category_ID"], $category["category_Name"]);
+    if (isset($category["category_Childs"])) {
+        $menu .= sprintf('<ul class="dropdown-menu dd-menu">%s</ul>', showAll($category["category_Childs"]));
     }
     return $menu;
 }
 
 function showAll(array $Tree) {
     $string = "";
-    foreach ($Tree as $catalog) {
-        $string .= oneCatalog($catalog);
+    foreach ($Tree as $category) {
+        $string .= onecategory($category);
     }
     return $string;
 }
 
-$catalogMenu = showAll($tree);
+$categoryMenu = showAll($tree);
 
-echo $catalogMenu;
+echo $categoryMenu;
 ?>

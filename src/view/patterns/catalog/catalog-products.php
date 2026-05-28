@@ -1,6 +1,10 @@
 <?php
 global $app;
-$products = $app->productRepository->getDataProducts();
+if (isset($_GET['cat'])) {
+    $products = $app->productRepository->getDataProductsByCategory($_GET['cat']);
+} else {
+    $products = $app->productRepository->getDataProducts();
+}
 ?>
 <section class="section">
     <div class="wrap">
@@ -13,8 +17,8 @@ $products = $app->productRepository->getDataProducts();
                 <article class="product-card">
                     <div class="product-media">
                         <img class="product-image" src="/assets/img/<?= $variable['product_DemoPhoto'] ?>" alt="<?= $variable['product_Name'] ?>" loading="lazy" decoding="async">
-                        <?php if (!empty($variable['product_Status'])): ?>
-                            <div class="product-tag"> <?= $app->tablesRepository->getOneDataByID("status_product", (int)$variable['product_Status'], "status_ID", "status_Type")->status_Type; ?> </div>
+                        <?php if (!empty($variable['product_Category'])): ?>
+                            <div class="product-tag"> <?= $app->tablesRepository->getOneDataByID("category_product", (int)$variable['product_Category'], "category_ID", "category_Name")->category_Name; ?> </div>
                         <?php endif; ?>
                     </div>
                     <div class="product-body">
@@ -52,17 +56,17 @@ $products = $app->productRepository->getDataProducts();
                             </div>
                         </div>
                         <?php if (isset($_SESSION['user_SESSION'])): ?>
-                        <div class="product-actions">
-                            <button
-                                class="btn btn-primary w-100 add-to-cart"
-                                data-id="<?= $variable['product_ID'] ?>"
-                                data-title="<?= htmlspecialchars($variable['product_Name']) ?>"
-                                data-description="<?= htmlspecialchars($variable['product_Description']) ?>"
-                                data-price="<?= $variable['product_Cost'] ?>"
-                                data-image="<?= htmlspecialchars($variable['product_DemoPhoto']) ?>">
-                                В корзину
-                            </button>
-                        </div>
+                            <div class="product-actions">
+                                <button
+                                    class="btn btn-primary w-100 add-to-cart"
+                                    data-id="<?= $variable['product_ID'] ?>"
+                                    data-title="<?= htmlspecialchars($variable['product_Name']) ?>"
+                                    data-description="<?= htmlspecialchars($variable['product_Description']) ?>"
+                                    data-price="<?= $variable['product_Cost'] ?>"
+                                    data-image="<?= htmlspecialchars($variable['product_DemoPhoto']) ?>">
+                                    В корзину
+                                </button>
+                            </div>
                         <?php endif; ?>
                     </div>
                 </article>

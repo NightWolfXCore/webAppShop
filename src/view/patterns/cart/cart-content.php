@@ -1,3 +1,8 @@
+<?php
+global $app;
+$fullname = sprintf("%s %s %s", $app->userData->user_Surname, $app->userData->user_Firstname, $app->userData->user_Patronymic ?? "");
+$phone = $app->userData->user_Phone;
+?>
 <section class="section">
     <div class="wrap">
         <section class="cart-hero">
@@ -33,18 +38,18 @@
                 </div>
             </div>
             <div class="cart-sidebar">
-                <form class="cart-box cart-form">
+                <form class="cart-box cart-form" action="/cart/submit" method="POST">
                     <div class="cart-box-title">
                         Данные доставки
                     </div>
                     <div class="cart-fields">
                         <div class="cart-field">
-                            <label>Имя получателя</label>
-                            <input type="text" class="form-control input" placeholder="Введите имя">
+                            <label>ФИО получателя</label>
+                            <input type="text" class="form-control input" name="user_FullName" value="<?= $fullname ?>" placeholder="Введите имя">
                         </div>
                         <div class="cart-field">
                             <label>Телефон</label>
-                            <input type="text" class="form-control input" placeholder="+7 (999) 999-99-99">
+                            <input type="text" class="form-control input" name="user_Phone" value="<?= $phone ?>" placeholder="+7 (999) 999-99-99">
                         </div>
                         <div class="cart-field">
                             <label>Адрес доставки</label>

@@ -27,8 +27,10 @@ class Routing
         $routing = $_GET["routing"] ?? "";
         foreach (self::$list as $variable) {
             if ($_SERVER["REQUEST_METHOD"] === "GET") {
-                if ($variable["url"] === "/" . $routing)
+                if ($variable["url"] === "/" . $routing) {
                     include sprintf("src/view/pages/%s.php", $variable["namepage"]);
+                    die();
+                }
             }
             if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 if ($variable["url"] === "/" . $routing) {
@@ -40,6 +42,7 @@ class Routing
 
                     $returnTo = $data["_returnTo"] ?? ($_SERVER["HTTP_REFERER"] ?? "/");
                     header("Location: " . $returnTo);
+                    die();
                 }
             }
         }
