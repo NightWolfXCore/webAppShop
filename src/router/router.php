@@ -23,6 +23,9 @@ Routing::getMethod("/profile/settings", "settings");
 Routing::getMethod("/cart", "cart");
 Routing::getMethod("/order/success", "orderSuccess");
 
+Routing::getMethod("/problem/notFoundPage", "problemPage");
+Routing::getMethod("/problem/accessDenied", "problemPage");
+Routing::getMethod("/problem/serverProblem", "problemPage");
 Routing::getMethod("/test", "testpage");
 
 Routing::postMethod("/login", $app->authentication, "login", $_POST);

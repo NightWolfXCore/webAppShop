@@ -3,6 +3,7 @@
 namespace core;
 
 use Model\Authentication;
+use Model\errors;
 use repository\Database;
 use Model\DataUserRepository;
 use Model\DataProductRepository;
@@ -21,6 +22,7 @@ class bootstrap
     public DataTablesRepository $tablesRepository;
     public Authentication $authentication;
     public Orders $orders;
+    public Errors $errors;
     public ?object $userData;
     public ?object $productData; 
 
@@ -42,6 +44,8 @@ class bootstrap
 
         $this->orderRepository = new DataOrderRepository($this->connectionDB);
         $this->orders = new orders($this->orderRepository, $this->userRepository);
+
+        $this->errors = new errors;
 
         // FullName User initialization
         if (isset($_SESSION["user_SESSION"])) {

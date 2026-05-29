@@ -2,8 +2,11 @@
 
 namespace router;
 
+use core\bootstrap;
+
 class Routing
 {
+
     public static ?array $list = null;
 
     public static function getMethod(string $URL, string $namepage)
@@ -25,10 +28,12 @@ class Routing
     public static function action()
     {
         $routing = $_GET["routing"] ?? "";
+        $findedPage = false;
         foreach (self::$list as $variable) {
             if ($_SERVER["REQUEST_METHOD"] === "GET") {
                 if ($variable["url"] === "/" . $routing) {
-                    include sprintf("src/view/pages/%s.php", $variable["namepage"]);
+                    $findedPage = true;
+                    include sprintf(__DIR__ . "/../view/pages/%s.php", $variable["namepage"]);
                     die();
                 }
             }
@@ -45,6 +50,11 @@ class Routing
                     die();
                 }
             }
+        }
+        if ($findedPage === false) {
+            $app = new bootstrap();
+            $app->errors->setCode(404);
+            include __DIR__ . "/../view/pages/problemPage.php";
         }
     }
 }
