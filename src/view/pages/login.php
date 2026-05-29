@@ -1,3 +1,5 @@
+<?php if (isset($_SESSION['user_SESSION'])) header("Location: /") ?>
+
 <!doctype html>
 <html lang="ru">
 <head>

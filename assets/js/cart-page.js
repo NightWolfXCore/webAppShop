@@ -18,6 +18,7 @@ function renderCart() {
         totalPrice.textContent = '0 ₽';
 
         updateCartBadge();
+        toggleCartSubmitButton();
 
         return;
     }
@@ -84,6 +85,7 @@ function renderCart() {
     totalPrice.textContent = `${total} ₽`;
 
     updateCartBadge();
+    toggleCartSubmitButton();
 }
 
 document.addEventListener('DOMContentLoaded', renderCart);
@@ -102,10 +104,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const cart = getCart();
 
-        const hiddenInput = document.getElementById('cart-products-input');
+        let totalPrice = 0;
 
-        hiddenInput.value = JSON.stringify(cart);
+        cart.forEach(product => {
+            totalPrice += product.price * product.quantity;
+        });
+
+        const cartInput = document.getElementById('cart-products-input');
+
+        cartInput.value = JSON.stringify(cart);
+
+        const totalPriceInput = document.getElementById('order-total-price-input');
+
+        totalPriceInput.value = totalPrice;
 
     });
 
 });
+function toggleCartSubmitButton() {
+
+    const submitButton = document.getElementById('cart-submit-but');
+
+    if (!submitButton) {
+        return;
+    }
+
+    const cart = getCart();
+
+    submitButton.disabled = cart.length === 0;
+}

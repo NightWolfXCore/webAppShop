@@ -10,7 +10,7 @@ class Authentication
 {
     private DataUserRepository $userRepository;
 
-    public function __construct(object $userRepository)
+    public function __construct(DataUserRepository $userRepository)
     {
         $this->userRepository = $userRepository;        
     }

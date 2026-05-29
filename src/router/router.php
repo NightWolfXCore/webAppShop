@@ -21,6 +21,7 @@ Routing::getMethod("/registerNewUser", "register");
 Routing::getMethod("/recoveryPass", "recoveryPass");
 Routing::getMethod("/profile/settings", "settings");
 Routing::getMethod("/cart", "cart");
+Routing::getMethod("/order/success", "orderSuccess");
 
 Routing::getMethod("/test", "testpage");
 
@@ -29,6 +30,7 @@ Routing::postMethod("/register", $app->authentication, "register", $_POST);
 Routing::postMethod("/logout", $app->authentication, "logout", $_POST);
 
 Routing::postMethod("/profile/settings/change", $app->userRepository, "updateUser", $_POST);
+Routing::postMethod("/cart/submit", $app->orders, "submitOrder", $_POST);
 
 Routing::action();
 ?>

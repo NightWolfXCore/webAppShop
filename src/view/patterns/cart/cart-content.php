@@ -2,6 +2,7 @@
 global $app;
 $fullname = sprintf("%s %s %s", $app->userData->user_Surname, $app->userData->user_Firstname, $app->userData->user_Patronymic ?? "");
 $phone = $app->userData->user_Phone;
+$payments = $app->tablesRepository->getAllDataByNameTable("payment");
 ?>
 <section class="section">
     <div class="wrap">
@@ -43,40 +44,34 @@ $phone = $app->userData->user_Phone;
                         Данные доставки
                     </div>
                     <div class="cart-fields">
+                        <input type="hidden" name="order_Client" value="<?= $_SESSION["user_SESSION"]["user_ID"] ?>">
                         <div class="cart-field">
                             <label>ФИО получателя</label>
-                            <input type="text" class="form-control input" name="user_FullName" value="<?= $fullname ?>" placeholder="Введите имя">
-                        </div>
-                        <div class="cart-field">
-                            <label>Телефон</label>
-                            <input type="text" class="form-control input" name="user_Phone" value="<?= $phone ?>" placeholder="+7 (999) 999-99-99">
+                            <input type="text" class="form-control input" name="order_FullName" value="<?= $fullname ?>" placeholder="Введите ФИО получателя" required>
                         </div>
                         <div class="cart-field">
                             <label>Адрес доставки</label>
-                            <input type="text" class="form-control input" placeholder="Улица, дом, квартира">
+                            <input type="text" class="form-control input" name="order_Address" placeholder="Улица, дом, квартира" required>
                         </div>
                         <div class="cart-field">
                             <label>Комментарий к заказу</label>
-                            <textarea class="form-control input cart-textarea" placeholder="Дополнительная информация"></textarea>
+                            <textarea class="form-control input cart-textarea" name="order_Comment" placeholder="Дополнительная информация"></textarea>
                         </div>
                     </div>
                     <div class="cart-box-title mt-4">
                         Способ оплаты
                     </div>
                     <div class="cart-payments">
-                        <label class="cart-payment">
-                            <input type="radio" name="payment" checked>
-                            <div class="cart-payment-ui">
-                                Оплата картой
-                            </div>
-                        </label>
-                        <label class="cart-payment">
-                            <input type="radio" name="payment">
-
-                            <div class="cart-payment-ui">
-                                Наличными курьеру
-                            </div>
-                        </label>
+                        <?php foreach ($payments as $variable): ?>
+                            <?php if ($variable['payment_active']): ?>
+                                <label class="cart-payment">
+                                    <input type="radio" name="order_Payment" value="<?= $variable["id"] ?>" <?= (($variable["id"] === "1") ? "checked" : null) ?> />
+                                    <div class="cart-payment-ui">
+                                        <?= $variable["payment_type"] ?>
+                                    </div>
+                                </label>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
                     </div>
                     <div class="cart-summary">
                         <div class="cart-summary-row">
@@ -98,10 +93,9 @@ $phone = $app->userData->user_Phone;
                             </span>
                         </div>
                     </div>
+                    <input type="hidden" name="order_total_price" id="order-total-price-input">
                     <input type="hidden" name="cart_products" id="cart-products-input">
-                    <div class="invisible">
-                        <input name="_returnTo" value="/" placeholder="returnToLink">
-                    </div>
+                    <input type="hidden" name="_returnTo" value="/" placeholder="returnToLink">
                     <button type="submit" id="cart-submit-but" class="btn btn-primary cart-submit">
                         Оформить заказ
                     </button>
