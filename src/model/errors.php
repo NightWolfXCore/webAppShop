@@ -41,14 +41,15 @@ class Errors
             die($ex->getMessage());
         }
     }
-    public function setCode(int $code): bool|null
+    public function setCode(int $code): void
     {
         $result = null;
         try {
-            $result = http_response_code($code);
-            if (!$result) 
-                throw new Exception("Ошибка установки ошибки xD");
-            return $result;
+            $_SESSION['problem_http'] = $code; 
+            // $result = http_response_code($code);
+            // if (!$result) 
+            //     throw new Exception("Ошибка установки ошибки xD");
+            // return $result;
         } catch (Exception $ex) {
             die($ex->getMessage());
         }

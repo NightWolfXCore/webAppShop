@@ -35,6 +35,41 @@ class Orders
         }
     }
 
+    public function deleteOrder(array $orderData): void
+    {
+        $this->userRepository->checkAdminPermission();
+
+        $result = null;
+        try {
+            $orderID = $orderData["order_ID"];
+
+            $result = $this->orderRepository->deleteOrderByID($orderID);
+
+            if (!$result)
+                throw new Exception("Ошибка! Что-то случилось на этапе удаления заказа :(");
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
+
+    public function changeStatusOrder(array $orderData): void
+    {
+        $this->userRepository->checkAdminPermission();
+
+        $result = null;
+        try {
+            $orderID = $orderData["order_ID"];
+            $status_order = $orderData["order_status"];
+
+            $result = $this->orderRepository->changeStatusOrder($orderID, $status_order);
+
+            if (!$result)
+                throw new Exception("Ошибка! Что-то случилось на этапе смене статуса заказа :(");
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
+
     private function checkOrderCart(array $orderCartData): bool|null
     {
         $result = null;

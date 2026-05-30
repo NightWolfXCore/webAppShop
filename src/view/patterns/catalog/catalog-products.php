@@ -18,7 +18,7 @@ if (isset($_GET['cat'])) {
                     <div class="product-media">
                         <img class="product-image" src="/assets/img/<?= $variable['product_DemoPhoto'] ?>" alt="<?= $variable['product_Name'] ?>" loading="lazy" decoding="async">
                         <?php if (!empty($variable['product_Category'])): ?>
-                            <div class="product-tag"> <?= $app->tablesRepository->getOneDataByID("category_product", (int)$variable['product_Category'], "category_ID", "category_Name")->category_Name; ?> </div>
+                            <div class="product-tag"> <?= $app->tablesRepository->getOneDataByID("category_product", (int)$variable['product_Category'], "category_ID", "category_Name") ?> </div>
                         <?php endif; ?>
                     </div>
                     <div class="product-body">
@@ -48,7 +48,7 @@ if (isset($_GET['cat'])) {
                         </div>
                         <div class="product-meta">
                             <div class="product-manufacturer">
-                                <?= $app->tablesRepository->getOneDataByID("manufacturer", (int)$variable['product_Manufacturer'], "manufacturer_ID", "manufacturer_Name")->manufacturer_Name; ?>
+                                <?= $app->tablesRepository->getOneDataByID("manufacturer", (int)$variable['product_Manufacturer'], "manufacturer_ID", "manufacturer_Name"); ?>
                             </div>
 
                             <div class="product-price">

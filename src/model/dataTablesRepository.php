@@ -18,7 +18,7 @@ class DataTablesRepository {
             $sqlGetOneData = sprintf("SELECT `%s` FROM `%s` WHERE `%s` = '%d'", $columnGet, $table, $idcolumn, $ID);
             if (($result = mysqli_query($this->dataBase, $sqlGetOneData)) === false)
                 throw new Exception("Ошибка при получении данных");
-            return $result->fetch_object();
+            return $result->fetch_object()->$columnGet;
         } catch (Exception $ex) {
             die($ex->getMessage());
         }

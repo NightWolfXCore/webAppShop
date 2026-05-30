@@ -17,7 +17,7 @@
 
                 </li>
                 <li>
-                    <a class="dropdown-item" href="/admin">Панель администратора</a>
+                    <a class="dropdown-item" href="/admin/orders">Панель администратора</a>
                 </li>
             <?php endif; ?>
             <li>

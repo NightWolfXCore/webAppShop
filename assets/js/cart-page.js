@@ -49,7 +49,7 @@ function renderCart() {
                     </div>
 
                     <div class="cart-product-price">
-                        ${item.price} ₽
+                        ${item.price * item.quantity} ₽
                     </div>
 
                 </div>

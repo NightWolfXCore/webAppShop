@@ -57,7 +57,7 @@ class DataUserRepository
 
             $sqlQueryInsertUser = sprintf("INSERT INTO `users`(`user_Login`, `user_Email`, `user_Phone`, `user_Surname`, `user_Firstname`, `user_Patronymic`, `user_Password`) VALUES
             ('%s', '%s', '%s', '%s', '%s', %s, '%s')", $user_Login, $user_Email, $user_Phone, $user_Surname, $user_Firstname, (empty($user_Patronymic) ? "NULL" : htmlspecialchars("'" . $user_Patronymic . "'", ENT_NOQUOTES)), password_hash($user_Password, PASSWORD_BCRYPT));
-            
+
             $result = mysqli_query($this->dataBase, $sqlQueryInsertUser);
 
             if (!$result)
@@ -94,6 +94,22 @@ class DataUserRepository
             die($ex->getMessage());
         }
     }
+
+    public function checkAdminPermission(): void
+    {
+        $result = null;
+        try {
+            $userData = $this->getDataUserByID($_SESSION['user_SESSION']['user_ID']);
+            
+            $user_Role = (int)$userData->user_Role;
+            
+            if ($user_Role !== 2)
+                header("Location: /problem/accessDenied");
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
+
     private static function emptyCheck(array $userData, object $initialDataUser): array|bool
     {
         try {

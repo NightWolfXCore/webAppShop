@@ -1,6 +1,8 @@
 <?php
-if (http_response_code() === 200)
+if (http_response_code() === 200 || (!isset($_SESSION['problem_http'])))
     header("Location: /");
+
+http_response_code($_SESSION['problem_http']);
 
 global $app;
 $error = $app->errors->getError();

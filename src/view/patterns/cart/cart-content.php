@@ -65,7 +65,7 @@ $payments = $app->tablesRepository->getAllDataByNameTable("payment");
                         <?php foreach ($payments as $variable): ?>
                             <?php if ($variable['payment_active']): ?>
                                 <label class="cart-payment">
-                                    <input type="radio" name="order_Payment" value="<?= $variable["id"] ?>" <?= (($variable["id"] === "1") ? "checked" : null) ?> />
+                                    <input type="radio" name="order_Payment" value="<?= $variable["payment_ID"] ?>" <?= (($variable["payment_ID"] === "1") ? "checked" : null) ?> />
                                     <div class="cart-payment-ui">
                                         <?= $variable["payment_type"] ?>
                                     </div>
