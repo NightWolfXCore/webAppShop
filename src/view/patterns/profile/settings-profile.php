@@ -1,4 +1,6 @@
-<?php global $app; ?>
+<?php global $app;
+$role_type = $app->tablesRepository->getOneDataByID('roles', $_SESSION['user_SESSION']['user_Role'], 'role_ID', 'role_Type');
+?>
 
 <main class="page profile-page">
     <div class="wrap">
@@ -30,7 +32,7 @@
                         </div>
                         <div class="profile-field input-died-wrapper">
                             <label>Роль</label>
-                            <input type="text" class="input-died" name="user_Role" value="<?= $app->userData->user_Role ?>">
+                            <input type="text" class="input-died" name="user_Role" value="<?= $role_type ?>">
                         </div>
                         <div class="profile-field input-died-wrapper">
                             <label>Логин</label>

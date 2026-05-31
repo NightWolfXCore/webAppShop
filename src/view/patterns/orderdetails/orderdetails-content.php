@@ -114,11 +114,11 @@ $payment = $app->tablesRepository->getOneDataByID("payment", $order["order_payme
                         <div class="order-details-title">
                             Управление заказом
                         </div>
-                        <form method="POST" class="admin-order-form">
-                            <input type="hidden" name="order_id" value="<?= $order["order_ID"] ?>">
+                        <form method="POST" class="admin-order-form" action="/admin/orders/statuschange">
+                            <input type="hidden" name="order_ID" value="<?= $order["order_ID"] ?>">
                             <div class="orders-field">
                                 <label>Статус</label>
-                                <select name="status" class="form-control input">
+                                <select name="order_status" class="form-control input">
                                     <?php foreach ($status_order as $variable): ?>
                                         <option value="<?= htmlspecialchars($variable['status_ID']) ?>" <?php if ((int)$variable['status_ID'] === (int)$order['order_Status']) echo "selected disabled"; ?>><?= htmlspecialchars($variable['status_Type']) ?></option>
                                     <?php endforeach; ?>
