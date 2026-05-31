@@ -66,11 +66,32 @@ class DataOrderRepository
         $result = null;
         try {
             $result = [];
-            if ($status) {
-                $sqlgetOrder = sprintf("SELECT * FROM `orders` WHERE `order_ID` = '%d' AND `order_Status` = %d", $orderID, $status);
-            } else {
-                $sqlgetOrder = sprintf("SELECT * FROM `orders` WHERE `order_ID` = '%d'", $orderID);
-            }
+            $sqlgetOrder = sprintf("SELECT * FROM `orders` WHERE `order_ID` = '%d'", $orderID);
+            if ($status)
+                $sqlgetOrder .= sprintf(" AND `order_Status` = %d", $status);
+
+            if (($result = mysqli_query($this->dataBase, $sqlgetOrder)) === false)
+                throw new Exception("Ошибка поиска заказа!");
+            return $result->fetch_all(MYSQLI_ASSOC);
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
+    public function getOrderByParameters(int $orderID, string $user_Fullname, int $status = 0)
+    {
+        $result = null;
+        try {
+            $result = [];
+            $sqlgetOrder = "SELECT * FROM `orders` WHERE ";
+            if ($status)
+                $sqlgetOrder .= sprintf(" `order_Status` = %d", $status);
+            else 
+                $sqlgetOrder .= sprintf(" `order_Status` != %d", $status);
+            if ($orderID)
+                $sqlgetOrder .= sprintf(" AND `order_ID` = '%d'", $orderID);
+            if (!empty($user_Fullname))
+                $sqlgetOrder .= sprintf(" AND `order_Fullname` = '%s'", $user_Fullname);
+
             if (($result = mysqli_query($this->dataBase, $sqlgetOrder)) === false)
                 throw new Exception("Ошибка поиска заказа!");
             return $result->fetch_all(MYSQLI_ASSOC);
@@ -79,15 +100,15 @@ class DataOrderRepository
         }
     }
 
-    public function getOrdersByUserID(int $userID, int $status = 0)
+    public function getOrdersByUserID(int $userID, int $orderID = 0, int $status = 0)
     {
         $result = null;
         try {
-            if ($status) {
-                $sqlgetOrders = sprintf("SELECT * FROM `orders` WHERE `order_Client` = '%d' AND `order_Status` = %d", $userID, $status);
-            } else {
-                $sqlgetOrders = sprintf("SELECT * FROM `orders` WHERE `order_Client` = '%d'", $userID);
-            }
+            $sqlgetOrders = sprintf("SELECT * FROM `orders` WHERE `order_Client` = '%d'", $userID);
+            if ($status)
+                $sqlgetOrders .= sprintf(" AND `order_Status` = %d", $status);
+            if ($orderID)
+                $sqlgetOrders .= sprintf(" AND `order_ID` = %d", $orderID);
 
             if (($result = mysqli_query($this->dataBase, $sqlgetOrders)) === false)
                 throw new Exception("Ошибка поиска заказов!");

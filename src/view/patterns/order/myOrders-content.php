@@ -2,14 +2,15 @@
 global $app;
 
 $status = (isset($_GET['status'])) ? (int)$_GET['status'] : 0;
+$order = (isset($_GET['order'])) ? (int)$_GET['order'] : 0;
 
-$myOrders = $app->orderRepository->getOrdersByUserID($_SESSION['user_SESSION']['user_ID'], $status);
+$myOrders = $app->orderRepository->getOrdersByUserID($_SESSION['user_SESSION']['user_ID'], $order, $status);
 $status_order = $app->tablesRepository->getAllDataByNameTable('status_order');
 ?>
 
 <section class="section">
     <div class="wrap">
-        <section class="orders-hero">
+        <section class="orders-hero orders-hero-myorders">
             <div class="orders-pattern"></div>
             <div class="orders-hero-content">
                 <div class="orders-kicker">
@@ -24,7 +25,7 @@ $status_order = $app->tablesRepository->getAllDataByNameTable('status_order');
             </div>
         </section>
         <div class="orders-layout">
-            <aside class="orders-sidebar">
+            <aside class="orders-filters">
                 <div class="orders-box">
                     <div class="orders-box-title">
                         Фильтрация
@@ -32,22 +33,30 @@ $status_order = $app->tablesRepository->getAllDataByNameTable('status_order');
                     <form class="orders-filters" method="GET">
                         <div class="orders-field">
                             <label>Номер заказа</label>
-                            <input type="text" class="form-control input" name="order" placeholder="Введите номер">
+                            <input type="text" class="form-control input" name="order" value="<? if ($order) echo $order ?>" placeholder="Введите номер">
                         </div>
                         <div class="orders-field">
                             <label>Статус</label>
                             <select class="form-control input" name="status">
-                                <option value="">Все</option>
+                                <option value="0" <?php if ($status === 0) echo "selected"; ?>>Все</option>
                                 <?php foreach ($status_order as $variable): ?>
-                                    <option value="<?= htmlspecialchars($variable['status_ID']) ?>" <?php if ((int)$variable['status_ID'] === $status) echo "selected"; ?> ><?= htmlspecialchars($variable['status_Type']) ?></option>
+                                    <option value="<?= htmlspecialchars($variable['status_ID']) ?>" <?php if ((int)$variable['status_ID'] === $status) echo "selected"; ?>><?= htmlspecialchars($variable['status_Type']) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
                         <button type="submit" class="btn btn-primary orders-filter-button">
                             Применить
                         </button>
+                        <a href="/myorders" class="btn btn-danger">
+                            Сбросить
+                        </a>
                     </form>
                 </div>
+                <?php if ($_SESSION['user_SESSION']['user_Role'] === "2"): ?>
+                    <a href="/admin/orders" class="btn btn-primary">
+                        Панель администратора
+                    </a>
+                <?php endif; ?>
             </aside>
             <div class="orders-content">
                 <div class="orders-list">

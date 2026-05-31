@@ -2827,20 +2827,168 @@ END #ERROR PAGE
 .orders-hero {
     position: relative;
     overflow: hidden;
-    min-height: 260px;
+    min-height: 300px;
     border-radius: 28px;
     border: 1px solid rgba(43, 36, 31, .12);
-    background:
-        radial-gradient(circle at top left, rgba(255, 255, 255, .96), rgba(242, 229, 206, .82)),
-        linear-gradient(135deg, rgba(255, 255, 255, .92), rgba(242, 229, 206, .52));
     box-shadow: var(--shadow);
-    padding: 42px;
+}
+
+.orders-hero-image {
+    position: absolute;
+    inset: 0;
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    transform: scale(1.05);
+}
+
+.orders-hero-overlay {
+    position: absolute;
+    inset: 0;
+
+    background:
+        linear-gradient(90deg,
+            rgba(0, 0, 0, .75) 0%,
+            rgba(0, 0, 0, .55) 40%,
+            rgba(0, 0, 0, .25) 100%);
 }
 
 .admin-hero {
+    .admin-hero {
+        background:
+            radial-gradient(circle at top left,
+                rgba(255, 255, 255, .96) 0%,
+                rgba(225, 235, 245, .92) 35%,
+                rgba(185, 205, 225, .82) 100%),
+            linear-gradient(135deg,
+                rgba(255, 255, 255, .92) 0%,
+                rgba(195, 215, 235, .72) 100%);
+    }
+}
+
+.admin-hero::before {
+    content: "";
+
+    position: absolute;
+
+    width: 480px;
+    height: 480px;
+
+    right: -140px;
+    top: -220px;
+
+    border-radius: 50%;
+
     background:
-        radial-gradient(circle at top left, rgba(255, 255, 255, .96), rgba(227, 235, 245, .82)),
-        linear-gradient(135deg, rgba(255, 255, 255, .92), rgba(227, 235, 245, .52));
+        radial-gradient(
+            circle,
+            rgba(120, 170, 220, .24) 0%,
+            rgba(120, 170, 220, 0) 70%
+        );
+
+    pointer-events: none;
+}
+
+.admin-hero::after {
+    content: "";
+
+    position: absolute;
+
+    width: 300px;
+    height: 300px;
+
+    left: -80px;
+    bottom: -120px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(210, 225, 240, .45) 0%,
+            rgba(210, 225, 240, 0) 70%
+        );
+
+    pointer-events: none;
+}
+
+.admin-hero .orders-kicker {
+    color: #49698a;
+}
+
+.admin-hero .orders-title {
+    color: #24374a;
+}
+
+.admin-hero .orders-text {
+    color: #546779;
+}
+
+.orders-hero-myorders {
+    background:
+        radial-gradient(circle at top left,
+            rgba(255, 255, 255, .96) 0%,
+            rgba(255, 235, 210, .92) 35%,
+            rgba(255, 210, 170, .82) 100%),
+        linear-gradient(135deg,
+            rgba(255, 255, 255, .92) 0%,
+            rgba(255, 224, 190, .72) 100%);
+}
+
+.orders-hero-myorders::before {
+    content: "";
+
+    position: absolute;
+
+    width: 420px;
+    height: 420px;
+
+    right: -120px;
+    top: -180px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(circle,
+            rgba(255, 180, 120, .28) 0%,
+            rgba(255, 180, 120, 0) 70%);
+
+    pointer-events: none;
+}
+
+.orders-hero-myorders::after {
+    content: "";
+
+    position: absolute;
+
+    width: 260px;
+    height: 260px;
+
+    left: -60px;
+    bottom: -100px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(circle,
+            rgba(255, 245, 210, .45) 0%,
+            rgba(255, 245, 210, 0) 70%);
+
+    pointer-events: none;
+}
+
+.orders-hero-myorders .orders-kicker {
+    color: #a56b3f;
+}
+
+.orders-hero-myorders .orders-title {
+    color: #3b2a1c;
+}
+
+.orders-hero-myorders .orders-text {
+    color: #6b5a4c;
 }
 
 .orders-pattern {
@@ -2854,8 +3002,9 @@ END #ERROR PAGE
 
 .orders-hero-content {
     position: relative;
-    z-index: 2;
+    z-index: 3;
     max-width: 640px;
+    padding: 42px;
 }
 
 .orders-kicker {
@@ -2863,19 +3012,20 @@ END #ERROR PAGE
     font-weight: 900;
     letter-spacing: .12em;
     text-transform: uppercase;
-    color: #8f6b47;
+    color: rgba(255, 255, 255, .85);
 }
 
 .orders-title {
     margin-top: 12px;
     font-size: 48px;
     font-weight: 950;
+    color: #fff;
 }
 
 .orders-text {
     margin-top: 18px;
     line-height: 1.8;
-    color: var(--muted);
+    color: rgba(255, 255, 255, .85);
 }
 
 .orders-layout,
@@ -2902,8 +3052,8 @@ END #ERROR PAGE
 }
 
 .orders-box {
-    position: sticky;
-    top: 20px;
+    /* position: sticky;
+    top: 20px; */
 }
 
 .orders-box-title,

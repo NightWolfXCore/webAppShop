@@ -2,10 +2,10 @@
 global $app;
 
 $idOrder = $_GET['id'] ?? 0;
-$status = (isset($_GET['status'])) ? (int)$_GET['status'] : 0;
 
-$order = $app->orderRepository->getOrderByID($idOrder, $status)[0];
+$order = $app->orderRepository->getOrderByID($idOrder)[0];
 $products = $app->orderRepository->getProductsInTheOrderByID($idOrder);
+$product_DemoPhoto = $products[0]["product_DemoPhoto"];
 $status_order = $app->tablesRepository->getAllDataByNameTable('status_order');
 $status_name = $app->tablesRepository->getOneDataByID("status_order", $order["order_Status"], "status_ID", "status_Type");
 $payment = $app->tablesRepository->getOneDataByID("payment", $order["order_payment"], "payment_ID", "payment_Type");
@@ -14,6 +14,13 @@ $payment = $app->tablesRepository->getOneDataByID("payment", $order["order_payme
 <section class="section">
     <div class="wrap">
         <section class="orders-hero">
+
+            <div class="orders-hero-image"
+                style="background-image:url('/assets/img/<?= htmlspecialchars($products[0]["product_DemoPhoto"] ?? "default.webp") ?>')">
+            </div>
+
+            <div class="orders-hero-overlay"></div>
+
             <div class="orders-pattern"></div>
             <div class="orders-hero-content">
                 <div class="orders-kicker">
@@ -69,7 +76,7 @@ $payment = $app->tablesRepository->getOneDataByID("payment", $order["order_payme
                         </div>
                         <div class="order-details-row">
                             <span>Статус</span>
-                            <div class="order-details-row-status-<?=$order["order_Status"]?>">
+                            <div class="order-details-row-status-<?= $order["order_Status"] ?>">
                                 <strong><?= $status_name ?></strong>
                             </div>
                         </div>
@@ -113,7 +120,7 @@ $payment = $app->tablesRepository->getOneDataByID("payment", $order["order_payme
                                 <label>Статус</label>
                                 <select name="status" class="form-control input">
                                     <?php foreach ($status_order as $variable): ?>
-                                        <option value="<?= htmlspecialchars($variable['status_ID']) ?>" <?php if ((int)$variable['status_ID'] === $status) echo "selected"; ?>><?= htmlspecialchars($variable['status_Type']) ?></option>
+                                        <option value="<?= htmlspecialchars($variable['status_ID']) ?>" <?php if ((int)$variable['status_ID'] === (int)$order['order_Status']) echo "selected disabled"; ?>><?= htmlspecialchars($variable['status_Type']) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
